@@ -6,5 +6,5 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FilmService {
-    public static Map<Integer, Film> films= new HashMap<>();
+    public static Map<Integer, Film> films = new HashMap<>();
 }
