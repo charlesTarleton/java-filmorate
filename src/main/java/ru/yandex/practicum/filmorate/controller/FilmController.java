@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.IncorrectFilmException;
@@ -11,7 +10,9 @@ import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 
-@RestController @Slf4j @RequestMapping("/films")
+@Slf4j
+@RestController
+@RequestMapping("/films")
 public class FilmController {
     public static int filmsId = 1;
 

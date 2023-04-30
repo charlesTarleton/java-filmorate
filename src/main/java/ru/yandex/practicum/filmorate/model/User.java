@@ -12,9 +12,12 @@ import java.util.List;
 @lombok.Data
 public class User {
     private Integer id;
-    @NotNull @Email @NotBlank
+    @NotNull
+    @Email
+    @NotBlank
     private final String email;
-    @NotNull @NotBlank
+    @NotNull
+    @NotBlank
     private final String login;
     private String name;
     @NotNull

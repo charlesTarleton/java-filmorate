@@ -11,9 +11,11 @@ import java.util.List;
 @lombok.Data
 public class Film {
     private Integer id;
-    @NotNull @NotBlank
+    @NotNull
+    @NotBlank
     private final String name;
-    @NotNull @NotBlank
+    @NotNull
+    @NotBlank
     private final String description;
     @NotNull
     private final LocalDate releaseDate;
