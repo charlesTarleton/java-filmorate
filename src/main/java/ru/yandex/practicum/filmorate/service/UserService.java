@@ -6,6 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class UserService {
-    public static Map<Integer, User> users = new HashMap<>();
+    public final Map<Integer, User> users = new HashMap<>();
 }
 

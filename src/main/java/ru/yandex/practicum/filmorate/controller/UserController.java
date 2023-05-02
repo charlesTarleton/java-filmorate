@@ -2,69 +2,73 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.IncorrectUserException;
+import ru.yandex.practicum.filmorate.logEnum.ErrorEnum;
+import ru.yandex.practicum.filmorate.logEnum.InfoEnum;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.exception.IncorrectUserExceptions.*;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    public static int usersId = 1;
+    private int usersId = 1;
+    private final UserService userService = new UserService();
 
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
+        log.info(InfoEnum.GET_NEW_USER_CREATE_REQUEST.getInfo(user.toString()));
         User newUser;
-        try {
-            if (user.getId() != null) {
-                throw new RuntimeException("Попытка создать ранее созданного пользователя");
-            }
-            user.setId(usersId++);
-            newUser = checkUser(user);
-        } catch (RuntimeException e) {
-            usersId--;
-            log.error(e.getMessage());
-            throw new IncorrectUserException();
+        if (user.getId() != null) {
+            log.error(ErrorEnum.FAIL_ID.getUserError(user.getId(), user.getLogin(), user.getId()));
+            throw new UserWithIdCreateException();
         }
-        log.info("Успешное создание пользователя {}", user);
-        return User.addUser(newUser);
+        newUser = checkUser(user);
+        user.setId(usersId++);
+        log.info(InfoEnum.SUCCESS_CREATE_USER.getInfo(newUser.getName()));
+        userService.users.put(newUser.getId(), newUser);
+        return newUser;
     }
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
+        log.info(InfoEnum.GET_NEW_USER_UPDATE_REQUEST.getInfo(user.toString()));
         User newUser;
-        try {
-            if (!UserService.users.containsKey(user.getId())) {
-                throw new RuntimeException("UserId=" + user.getId() +
-                        ". Попытка обновить несуществующего пользователя");
-            }
-            newUser = checkUser(user);
-        } catch (RuntimeException e) {
-            log.error(e.getMessage());
-            throw new IncorrectUserException();
+        if (!userService.users.containsKey(user.getId())) {
+            log.error(ErrorEnum.FAIL_ID.getUserError(user.getId(), user.getLogin(), user.getId()));
+            throw new UserWithoutIdUpdateException();
         }
-        log.info("Успешное обновление пользователя с Id {} на {}", user.getId(), user);
-        return User.updateUser(newUser);
+        newUser = checkUser(user);
+        log.info(InfoEnum.SUCCESS_UPDATE_USER.getInfo(newUser.getName()));
+        userService.users.put(newUser.getId(), newUser);
+        return newUser;
     }
 
     @GetMapping
     public List<User> getAllUsers() {
-        return User.getAllUsers();
+        log.info(InfoEnum.GET_NEW_USER_GET_REQUEST.getMessage());
+        return new ArrayList<>(userService.users.values());
     }
 
     private User checkUser(@Valid User user) {
+        log.info(InfoEnum.CHECK_USER.getMessage());
         if (user.getBirthday().isAfter(LocalDate.now())) {
-            throw new RuntimeException("UserId=" + user.getId() + ". Значение даты рождения пользователя равно \"" +
-                    user.getBirthday() + "\"");
+            log.error(ErrorEnum.FAIL_BIRTHDAY_USER.getUserError(user.getId(), user.getLogin(), user.getBirthday()));
+            throw new UserBirthdayException();
         }
-
         if (user.getName() == null || user.getName().isEmpty()) {
             user.setName(user.getLogin());
         }
         return user;
+    }
+
+    public void clearUsers() {
+        log.info(InfoEnum.CLEAR_USERS.getMessage());
+        userService.users.clear();
     }
 }
