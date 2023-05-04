@@ -12,8 +12,6 @@ public enum InfoEnum {
     GET_NEW_USER_UPDATE_REQUEST("Получено новое значение для обновления пользователя: "),
     CHECK_FILM("Начата процедура валидации значений фильма"),
     CHECK_USER("Начата процедура валидации значений пользователя"),
-    CLEAR_FILMS("Список фильмов успешно очищен"),
-    CLEAR_USERS("Список пользователей успешно очищен"),
     GET_NEW_USER_GET_REQUEST("Получен запрос на получение всех пользователей");
 
     private final String message;

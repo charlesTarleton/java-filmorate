@@ -23,39 +23,37 @@ public class UserController {
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
         log.info(InfoEnum.GET_NEW_USER_CREATE_REQUEST.getInfo(user.toString()));
-        User newUser;
         if (user.getId() != null) {
             log.error(ErrorEnum.FAIL_ID.getUserError(user.getId(), user.getLogin(), user.getId()));
             throw new UserWithIdCreateException();
         }
-        newUser = checkUser(user);
+        checkUser(user);
         user.setId(usersId++);
-        log.info(InfoEnum.SUCCESS_CREATE_USER.getInfo(newUser.getName()));
-        userService.users.put(newUser.getId(), newUser);
-        return newUser;
+        log.info(InfoEnum.SUCCESS_CREATE_USER.getInfo(user.getName()));
+        userService.add(user.getId(), user);
+        return user;
     }
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
         log.info(InfoEnum.GET_NEW_USER_UPDATE_REQUEST.getInfo(user.toString()));
-        User newUser;
-        if (!userService.users.containsKey(user.getId())) {
+        if (!userService.usersContains(user.getId())) {
             log.error(ErrorEnum.FAIL_ID.getUserError(user.getId(), user.getLogin(), user.getId()));
             throw new UserWithoutIdUpdateException();
         }
-        newUser = checkUser(user);
-        log.info(InfoEnum.SUCCESS_UPDATE_USER.getInfo(newUser.getName()));
-        userService.users.put(newUser.getId(), newUser);
-        return newUser;
+        checkUser(user);
+        log.info(InfoEnum.SUCCESS_UPDATE_USER.getInfo(user.getName()));
+        userService.add(user.getId(), user);
+        return user;
     }
 
     @GetMapping
     public List<User> getAllUsers() {
         log.info(InfoEnum.GET_NEW_USER_GET_REQUEST.getMessage());
-        return new ArrayList<>(userService.users.values());
+        return new ArrayList<>(userService.getUsers().values());
     }
 
-    private User checkUser(@Valid User user) {
+    private void checkUser(@Valid User user) {
         log.info(InfoEnum.CHECK_USER.getMessage());
         if (user.getBirthday().isAfter(LocalDate.now())) {
             log.error(ErrorEnum.FAIL_BIRTHDAY_USER.getUserError(user.getId(), user.getLogin(), user.getBirthday()));
@@ -64,11 +62,5 @@ public class UserController {
         if (user.getName() == null || user.getName().isEmpty()) {
             user.setName(user.getLogin());
         }
-        return user;
-    }
-
-    public void clearUsers() {
-        log.info(InfoEnum.CLEAR_USERS.getMessage());
-        userService.users.clear();
     }
 }

@@ -31,27 +31,27 @@ public class FilmController {
         checkFilm(film);
         film.setId(filmsId++);
         log.info(InfoEnum.SUCCESS_ADD_FILM.getInfo(film.getName()));
-        filmService.films.put(film.getId(), film);
+        filmService.add(film.getId(), film);
         return film;
     }
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
         log.info(InfoEnum.GET_NEW_FILM_UPDATE_REQUEST.getInfo(film.toString()));
-        if (!filmService.films.containsKey(film.getId())) {
+        if (!filmService.filmsContains(film.getId())) {
             log.error(ErrorEnum.FAIL_ID.getFilmError(film.getId(), film.getName(), film.getId()));
             throw new FilmWithoutIdUpdateException();
         }
         checkFilm(film);
         log.info(InfoEnum.SUCCESS_UPDATE_FILM.getInfo(film.getName()));
-        filmService.films.put(film.getId(), film);
+        filmService.add(film.getId(), film);
         return film;
     }
 
     @GetMapping()
     public List<Film> getAllFilms() {
         log.info(InfoEnum.GET_NEW_FILM_GET_REQUEST.getMessage());
-        return new ArrayList<>(filmService.films.values());
+        return new ArrayList<>(filmService.getFilms().values());
     }
 
     private void checkFilm(Film film) {
@@ -68,10 +68,5 @@ public class FilmController {
             log.error(ErrorEnum.FAIL_FILM_DURATION.getFilmError(film.getId(), film.getName(), film.getDuration()));
             throw new FilmDurationException();
         }
-    }
-
-    public void clearFilms() {
-        log.info(InfoEnum.CLEAR_FILMS.getMessage());
-        filmService.films.clear();
     }
 }
