@@ -17,7 +17,7 @@ import java.util.List;
 @RequestMapping("/films")
 public class FilmController {
     private final FilmService filmService;
-    private final static String DEFAULT_COUNT_OF_MOST_LIKED_FILMS = "10";
+    private static final String DEFAULT_COUNT_OF_MOST_LIKED_FILMS = "10";
 
     @Autowired
     public FilmController(FilmService filmService) {
