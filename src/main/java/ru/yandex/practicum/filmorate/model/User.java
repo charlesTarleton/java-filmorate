@@ -5,10 +5,12 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @lombok.Data
 public class User {
-    private Integer id;
+    private Integer ID;
     @NotBlank
     @Pattern(regexp = "\\S+")
     @Email
@@ -19,4 +21,5 @@ public class User {
     private String name;
     @NotNull
     private final LocalDate birthday;
+    private Set<Integer> UserFriends = new HashSet<>();
 }
