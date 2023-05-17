@@ -74,7 +74,7 @@ public class UserService {
             log.error(ErrorUserEnum.FAIL_USER_ID.getUserError(userIDStr));
             throw new UserWithoutIDException();
         }
-        log.info(InfoUserSuccessEnum.SUCCESS_GET_USERS
+        log.info(InfoUserSuccessEnum.SUCCESS_GET_USER
                 .getInfo(userIDStr + "/" + userStorage.getUsers().get(userID).getLogin()));
         return userStorage.getUsers().get(userID);
     }

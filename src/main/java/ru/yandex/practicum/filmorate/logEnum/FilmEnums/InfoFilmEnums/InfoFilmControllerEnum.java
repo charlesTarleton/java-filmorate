@@ -13,6 +13,7 @@ public enum InfoFilmControllerEnum {
     REQUEST_FILM_CONTROLLER_GET_MOST_LIKED_FILMS("Контроллер фильмов получил запрос на получение" +
             " самых популярных фильмов в количестве: ");
     private final String message;
+
     InfoFilmControllerEnum(String message) {
         this.message = message;
     }

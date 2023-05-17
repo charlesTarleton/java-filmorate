@@ -8,6 +8,7 @@ public enum InfoUserStorageEnum {
     REQUEST_USER_STORAGE_CONTAINS_USER("Хранилище пользователей получило запрос на проверку" +
             " наличия пользователя с ID: ");
     private final String message;
+
     InfoUserStorageEnum(String message) {
         this.message = message;
     }

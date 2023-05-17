@@ -10,6 +10,7 @@ public enum InfoFilmSuccessEnum {
     SUCCESS_GET_FILMS("Успешное получение всех фильмов"),
     SUCCESS_GET_MOST_LIKED_FILMS("Успешное получение самых популярных фильмов в количестве: ");
     private final String message;
+
     InfoFilmSuccessEnum(String message) {
         this.message = message;
     }

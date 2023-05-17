@@ -4,6 +4,7 @@ public enum ErrorUserEnum {
     FAIL_USER_ID("Характеристика пользователя: \"id\". Значение: "),
     FAIL_USER_BIRTHDAY("Характеристика пользователя: \"birthday\". Значение: ");
     private final String message;
+
     ErrorUserEnum(String message) {
         this.message = message;
     }
