@@ -20,8 +20,8 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     public Film addFilm(Film film) {
         log.info(InfoFilmStorageEnum.REQUEST_FILM_STORAGE_ADD_FILM.getInfo(film.toString()));
-        film.setID(globalFilmID);
-        log.info(InfoFilmSuccessEnum.SUCCESS_ADD_FILM.getInfo(film.getID() + "/" + film.getName()));
+        film.setId(globalFilmID);
+        log.info(InfoFilmSuccessEnum.SUCCESS_ADD_FILM.getInfo(film.getId() + "/" + film.getName()));
         films.put(globalFilmID++, film);
         return film;
     }

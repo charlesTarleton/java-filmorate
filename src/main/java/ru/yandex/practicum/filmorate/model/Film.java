@@ -8,7 +8,7 @@ import java.util.Set;
 
 @lombok.Data
 public class Film {
-    private Integer ID;
+    private Integer id;
     @NotBlank
     private final String name;
     private final String description;

@@ -32,8 +32,8 @@ public class FilmService {
 
     public Film addFilmFS(Film film) {
         log.info(InfoFilmServiceEnum.REQUEST_FILM_SERVICE_ADD_FILM.getInfo(film.toString()));
-        if (film.getID() != null) {
-            log.error(ErrorFilmEnum.FAIL_FILM_ID.getFilmError(film.getID()));
+        if (film.getId() != null) {
+            log.error(ErrorFilmEnum.FAIL_FILM_ID.getFilmError(film.getId()));
             throw new FilmWithIDException();
         }
         validateFilm(film);

@@ -39,7 +39,7 @@ public class FilmController {
     @PutMapping
     public Film updateFilmFC(@Valid @RequestBody Film film) {
         log.info(InfoFilmControllerEnum.REQUEST_FILM_CONTROLLER_UPDATE_FILM.getInfo(film.toString()));
-        return filmService.updateFilmFS(film.getID(), film);
+        return filmService.updateFilmFS(film.getId(), film);
     }
 
     @GetMapping("/{id}")

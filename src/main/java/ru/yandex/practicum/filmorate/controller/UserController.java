@@ -38,7 +38,7 @@ public class UserController {
     @PutMapping
     public User updateUserUC(@Valid @RequestBody User user) {
         log.info(InfoUserControllerEnum.REQUEST_USER_CONTROLLER_UPDATE_USER.getInfo(user.toString()));
-        return userService.updateUserUS(user.getID(), user);
+        return userService.updateUserUS(user.getId(), user);
     }
 
     @GetMapping("/{id}")

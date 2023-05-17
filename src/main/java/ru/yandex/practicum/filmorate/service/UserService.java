@@ -33,8 +33,8 @@ public class UserService {
 
     public User addUserUS(User user) {
         log.info(InfoUserServiceEnum.REQUEST_USER_SERVICE_ADD_USER.getInfo(user.toString()));
-        if (user.getID() != null) {
-            log.error(ErrorUserEnum.FAIL_USER_ID.getUserError(user.getID()));
+        if (user.getId() != null) {
+            log.error(ErrorUserEnum.FAIL_USER_ID.getUserError(user.getId()));
             throw new UserWithIDException();
         }
         validateUser(user);

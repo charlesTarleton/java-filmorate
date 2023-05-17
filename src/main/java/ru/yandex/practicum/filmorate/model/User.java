@@ -10,7 +10,7 @@ import java.util.Set;
 
 @lombok.Data
 public class User {
-    private Integer ID;
+    private Integer id;
     @NotBlank
     @Pattern(regexp = "\\S+")
     @Email
@@ -21,5 +21,5 @@ public class User {
     private String name;
     @NotNull
     private final LocalDate birthday;
-    private Set<Integer> UserFriends = new HashSet<>();
+    private Set<Integer> userFriends = new HashSet<>();
 }

@@ -106,7 +106,7 @@ public class FilmServiceTest {
 
         Film localFilm = new Film("На Тоскану", "История, приключение, комедия",
                 LocalDate.of(2019,4, 25), 95, 10);
-        localFilm.setID(1);
+        localFilm.setId(1);
         filmController.updateFilmFC(localFilm);
 
         List<Film> filmList = filmController.getFilmsFC();
@@ -126,7 +126,7 @@ public class FilmServiceTest {
                 " И хотя его искусство в магии знаков было велико, ему предстояло еще многому научится." +
                 "Но мы верили, что Геральт спасет мир",
                 LocalDate.of(2020, 1, 1), 160, 4);
-        localFilm.setID(1);
+        localFilm.setId(1);
         assertThrows(FilmDescriptionException.class, () -> filmController.updateFilmFC(localFilm));
 
         List<Film> filmList = filmController.getFilmsFC();
@@ -141,7 +141,7 @@ public class FilmServiceTest {
 
         Film localFilm = new Film("Довакин меняет профессию", "Комедия, ужасы",
                 LocalDate.of(170, 5, 5), 120, 6);
-        localFilm.setID(1);
+        localFilm.setId(1);
         assertThrows(FilmReleaseDateException.class, () -> filmController.updateFilmFC(localFilm));
 
         List<Film> filmList = filmController.getFilmsFC();
@@ -159,12 +159,12 @@ public class FilmServiceTest {
 
         Film localFilm1 = new Film("Gravity Loops", "Детское, приключение",
                 LocalDate.of(2023, 5, 5), 0, 2);
-        localFilm1.setID(1);
+        localFilm1.setId(1);
         assertThrows(FilmDurationException.class, () -> filmController.updateFilmFC(localFilm1));
 
         Film localFilm2 = new Film("Gravity Loops", "Детское, приключение",
                 LocalDate.of(2023, 5, 5), -100, 2);
-        localFilm2.setID(2);
+        localFilm2.setId(2);
         assertThrows(FilmDurationException.class, () -> filmController.updateFilmFC(localFilm2));
 
         List<Film> filmList = filmController.getFilmsFC();
@@ -229,7 +229,7 @@ public class FilmServiceTest {
 
         Film testFilm2 = filmController.addFilmFC(new Film("Красная перепёлка", "Шпионский триллер",
                 LocalDate.of(2018,3, 2), 140, 10));
-        testFilm2.setID(2);
+        testFilm2.setId(2);
 
         assertEquals(testFilm2, filmController.getFilmFC("2"));
     }

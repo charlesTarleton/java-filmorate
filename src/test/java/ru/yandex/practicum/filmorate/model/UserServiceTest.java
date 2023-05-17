@@ -64,7 +64,7 @@ public class UserServiceTest {
 
         User updateUser = new User("newUser1@yandex.ru", "user1Login",
                 LocalDate.of(1990, 1, 1));
-        updateUser.setID(1);
+        updateUser.setId(1);
         userController.updateUserUC(updateUser);
 
         List<User> userList = userController.getUsersUC();
@@ -83,7 +83,7 @@ public class UserServiceTest {
 
         User localUser = new User("user2@yandex.ru", "user2Login",
                 LocalDate.of(2024, 1, 1));
-        localUser.setID(2);
+        localUser.setId(2);
         assertThrows(UserBirthdayException.class, () -> userController.updateUserUC(localUser));
 
         List<User> userList = userController.getUsersUC();
@@ -142,8 +142,8 @@ public class UserServiceTest {
 
         User testUser2 = userController.addUserUC(new User("user2@yandex.ru", "user2Login",
                 LocalDate.of(1980, 1, 1)));
-        testUser1.setID(1);
-        testUser2.setID(2);
+        testUser1.setId(1);
+        testUser2.setId(2);
         assertEquals(testUser1, userController.getUserUC("1"));
         assertEquals(testUser2, userController.getUserUC("2"));
     }
@@ -155,8 +155,8 @@ public class UserServiceTest {
 
         User testUser2 = userController.addUserUC(new User("user2@yandex.ru", "user2Login",
                 LocalDate.of(1980, 1, 1)));
-        testUser1.setID(1);
-        testUser2.setID(2);
+        testUser1.setId(1);
+        testUser2.setId(2);
         assertThrows(UserWithoutIDException.class, () -> userController.getUserUC("3"));
         assertThrows(UserWithoutIDException.class, () -> userController.getUserUC(null));
     }
@@ -168,9 +168,9 @@ public class UserServiceTest {
 
         User testUser2 = userController.addUserUC(new User("user2@yandex.ru", "user2Login",
                 LocalDate.of(1980, 1, 1)));
-        testUser1.setID(1);
+        testUser1.setId(1);
         testUser1.getUserFriends().add(2);
-        testUser2.setID(2);
+        testUser2.setId(2);
         testUser2.getUserFriends().add(1);
 
         userController.addFriendUC("1", "2");
@@ -247,8 +247,8 @@ public class UserServiceTest {
         User testUser2 = userController.addUserUC(new User("user2@yandex.ru", "user2Login",
                 LocalDate.of(1980, 1, 1)));
         userController.addFriendUC("1", "2");
-        testUser1.setID(1);
-        testUser2.setID(2);
+        testUser1.setId(1);
+        testUser2.setId(2);
 
         List<User> friendsList = userController.getFriendsUC("1");
         assertEquals(1, friendsList.size());
@@ -267,8 +267,8 @@ public class UserServiceTest {
         User testUser2 = userController.addUserUC(new User("user2@yandex.ru", "user2Login",
                 LocalDate.of(1980, 1, 1)));
         userController.addFriendUC("1", "2");
-        testUser1.setID(1);
-        testUser2.setID(2);
+        testUser1.setId(1);
+        testUser2.setId(2);
 
         assertThrows(UserWithoutIDException.class, () -> userController.getFriendsUC("4"));
         assertThrows(UserWithoutIDException.class, () -> userController.getFriendsUC(null));
@@ -287,7 +287,7 @@ public class UserServiceTest {
 
         userController.addUserUC(new User("user4@yandex.ru", "user4Login",
                 LocalDate.of(1980, 1, 1)));
-        testUser2.setID(2);
+        testUser2.setId(2);
         userController.addFriendUC("1", "2");
         userController.addFriendUC("3", "2");
         userController.addFriendUC("3", "4");
