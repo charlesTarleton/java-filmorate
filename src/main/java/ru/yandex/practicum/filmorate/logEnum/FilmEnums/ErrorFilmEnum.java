@@ -6,9 +6,7 @@ public enum ErrorFilmEnum {
     FAIL_FILM_RELEASE_DATE("Характеристика фильма: \"releaseDate\". Значение: "),
     FAIL_FILM_DURATION("Характеристика фильма: \"duration\". Значение: "),
     FAIL_FILM_COUNT("Характеристика полученного значения \"count\". Значение: ");
-
     private final String message;
-
     ErrorFilmEnum(String message) {
         this.message = message;
     }

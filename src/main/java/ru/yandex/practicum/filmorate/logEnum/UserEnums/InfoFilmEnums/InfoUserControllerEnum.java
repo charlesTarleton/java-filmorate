@@ -19,9 +19,7 @@ public enum InfoUserControllerEnum {
             " на получение всех друзей пользователя с ID: "),
     REQUEST_USER_CONTROLLER_GET_COMMON_FRIENDS_USER("Контроллер пользователей получил запрос" +
             " на получение общих друзей с другим пользователем - ID/ID: ");
-    
     private final String message;
-    
     InfoUserControllerEnum(String message) {
         this.message = message;
     }

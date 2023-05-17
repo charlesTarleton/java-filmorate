@@ -14,9 +14,7 @@ public enum InfoFilmServiceEnum {
             " самых популярных фильмов в количестве: "),
     FILM_SERVICE_VALIDATE_FILM("Начата процедура валидации фильма: "),
     FILM_SERVICE_PARSE_FILM_ID("Получен запрос на парсинг ID фильма");
-
     private final String message;
-
     InfoFilmServiceEnum(String message) {
         this.message = message;
     }

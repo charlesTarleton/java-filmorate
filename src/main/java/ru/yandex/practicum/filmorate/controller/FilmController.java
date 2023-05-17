@@ -63,6 +63,7 @@ public class FilmController {
     @GetMapping("/popular")
     public List<Film> getMostLikedFilmsFC(@RequestParam(
             defaultValue = DEFAULT_COUNT_OF_MOST_LIKED_FILMS) String count) {
+        log.info(InfoFilmControllerEnum.REQUEST_FILM_CONTROLLER_GET_MOST_LIKED_FILMS.getInfo(count));
         return filmService.getMostLikedFilmsFS(Integer.parseInt(count));
     }
 

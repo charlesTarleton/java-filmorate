@@ -10,9 +10,7 @@ public enum InfoUserSuccessEnum {
     SUCCESS_GET_USERS("Успешное получение всех пользователей"),
     SUCCESS_GET_FRIENDS_USER("Успешное получение всех друзей пользователя с ID: "),
     SUCCESS_GET_COMMON_FRIENDS_USER("Успешное получение общих друзей пользователей ID/ID: ");
-
     private final String message;
-
     InfoUserSuccessEnum(String message) {
         this.message = message;
     }

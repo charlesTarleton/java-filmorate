@@ -16,9 +16,7 @@ public enum InfoUserServiceEnum {
             " общих друзей с другим пользователем ID/ID"),
     USER_SERVICE_VALIDATE_USER("Начата процедура валидации пользователя: "),
     USER_SERVICE_PARSE_USER_ID("Получен запрос на парсинг ID пользователя");
-
     private final String message;
-
     InfoUserServiceEnum(String message) {
         this.message = message;
     }
