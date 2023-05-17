@@ -98,8 +98,12 @@ public class FilmService {
             log.error(ErrorFilmEnum.FAIL_FILM_ID.getFilmError(filmID));
             throw new FilmWithoutIDException();
         }
+        if (!userStorage.isContainsUser(userID)) {
+            log.error(ErrorUserEnum.FAIL_USER_ID.getUserError(userIDStr));
+            throw new UserWithoutIDException();
+        }
         if (!filmStorage.getFilms().get(filmID).getLikes().contains(userID)) {
-
+            log.error(ErrorFilmEnum.FAIL_FILM_ID.getFilmError(filmIDStr));
             throw new FilmNotContainsUserLikeException();
         }
         log.info(InfoFilmSuccessEnum.SUCCESS_DISLIKE_FILM.getInfo(filmID + "/" + filmStorage
