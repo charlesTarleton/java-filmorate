@@ -7,11 +7,13 @@ import java.util.Map;
 public interface UserStorage {
     public User addUser(User user);
 
-    public void deleteUser(Integer userID);
+    public void deleteUser(long userID);
 
-    public User updateUser(Integer userID, User user);
+    public User updateUser(long userID, User user);
 
-    public boolean isContainsUser(Integer userID);
+    public boolean isContainsUser(long userID);
 
-    public Map<Integer, User> getUsers();
+    public Map<Long, User> getUsers();
+
+    public User getUser(long userID);
 }

@@ -7,9 +7,13 @@ import java.util.Map;
 public interface FilmStorage {
     public Film addFilm(Film film);
 
-    public void deleteFilm(Integer filmID);
+    public void deleteFilm(long filmID);
 
-    public Film updateFilm(Integer filmID, Film film);
+    public Film updateFilm(long filmID, Film film);
 
-    public Map<Integer, Film> getFilms();
+    public boolean isContainsFilm(long filmID);
+
+    public Map<Long, Film> getFilms();
+
+    public  Film getFilm(long filmID);
 }

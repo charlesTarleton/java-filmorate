@@ -3,11 +3,11 @@ package ru.yandex.practicum.filmorate.model;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.FilmController;
-import ru.yandex.practicum.filmorate.exception.IncorrectFilmExceptions.*;
-import ru.yandex.practicum.filmorate.exception.IncorrectUserExceptions.UserWithoutIDException;
+import ru.yandex.practicum.filmorate.exception.FilmorateObjectException;
+import ru.yandex.practicum.filmorate.exception.FilmorateValidationException;
 import ru.yandex.practicum.filmorate.inMemoryStorage.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.inMemoryStorage.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.filmService.FilmService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -52,7 +52,7 @@ public class FilmServiceTest {
         Film testFilm = filmController.addFilmFC(new Film("На Мюнхен", "История, приключение, комедия",
                 LocalDate.of(2019,4, 25), 95, 10));
 
-        assertThrows(FilmDescriptionException.class,
+        assertThrows(FilmorateValidationException.class,
                 () -> filmController.addFilmFC(new Film("Непосредственно Геральт", "Этот фильм" +
                         " повествует о простом парне по имени Геральт, который жил обычной жизнью темерского" +
                         " школьника. Но однажды его засосало в какую-то дешевую японскую ММО РПГ и в этом мире" +
@@ -70,7 +70,7 @@ public class FilmServiceTest {
         Film testFilm = filmController.addFilmFC(new Film("Красная перепёлка", "Шпионский триллер",
                 LocalDate.of(2018,3, 2), 140, 10));
 
-        assertThrows(FilmReleaseDateException.class,
+        assertThrows(FilmorateValidationException.class,
                 () -> filmController.addFilmFC(new Film("Довакин меняет профессию", "Комедия, ужасы",
                                 LocalDate.of(170, 5, 5), 120, 6)));
 
@@ -84,10 +84,10 @@ public class FilmServiceTest {
         Film testFilm = filmController.addFilmFC(new Film("На Мюнхен", "История, приключение, комедия",
                 LocalDate.of(2019,4, 25), 95, 10));
 
-        assertThrows(FilmDurationException.class,
+        assertThrows(FilmorateValidationException.class,
                 () -> filmController.addFilmFC(new Film("Gravity Loops", "Детское, приключение",
                 LocalDate.of(2023, 5, 5), 0, 2)));
-        assertThrows(FilmDurationException.class,
+        assertThrows(FilmorateValidationException.class,
                 () -> filmController.addFilmFC(new Film("Gravity Loops", "Детское, приключение",
                 LocalDate.of(2023, 5, 5), -100, 2)));
 
@@ -106,7 +106,7 @@ public class FilmServiceTest {
 
         Film localFilm = new Film("На Тоскану", "История, приключение, комедия",
                 LocalDate.of(2019,4, 25), 95, 10);
-        localFilm.setId(1);
+        localFilm.setId(1L);
         filmController.updateFilmFC(localFilm);
 
         List<Film> filmList = filmController.getFilmsFC();
@@ -126,8 +126,8 @@ public class FilmServiceTest {
                 " И хотя его искусство в магии знаков было велико, ему предстояло еще многому научится." +
                 "Но мы верили, что Геральт спасет мир",
                 LocalDate.of(2020, 1, 1), 160, 4);
-        localFilm.setId(1);
-        assertThrows(FilmDescriptionException.class, () -> filmController.updateFilmFC(localFilm));
+        localFilm.setId(1L);
+        assertThrows(FilmorateValidationException.class, () -> filmController.updateFilmFC(localFilm));
 
         List<Film> filmList = filmController.getFilmsFC();
         assertEquals(1, filmList.size());
@@ -141,8 +141,8 @@ public class FilmServiceTest {
 
         Film localFilm = new Film("Довакин меняет профессию", "Комедия, ужасы",
                 LocalDate.of(170, 5, 5), 120, 6);
-        localFilm.setId(1);
-        assertThrows(FilmReleaseDateException.class, () -> filmController.updateFilmFC(localFilm));
+        localFilm.setId(1L);
+        assertThrows(FilmorateValidationException.class, () -> filmController.updateFilmFC(localFilm));
 
         List<Film> filmList = filmController.getFilmsFC();
         assertEquals(1, filmList.size());
@@ -159,13 +159,13 @@ public class FilmServiceTest {
 
         Film localFilm1 = new Film("Gravity Loops", "Детское, приключение",
                 LocalDate.of(2023, 5, 5), 0, 2);
-        localFilm1.setId(1);
-        assertThrows(FilmDurationException.class, () -> filmController.updateFilmFC(localFilm1));
+        localFilm1.setId(1L);
+        assertThrows(FilmorateValidationException.class, () -> filmController.updateFilmFC(localFilm1));
 
         Film localFilm2 = new Film("Gravity Loops", "Детское, приключение",
                 LocalDate.of(2023, 5, 5), -100, 2);
-        localFilm2.setId(2);
-        assertThrows(FilmDurationException.class, () -> filmController.updateFilmFC(localFilm2));
+        localFilm2.setId(2L);
+        assertThrows(FilmorateValidationException.class, () -> filmController.updateFilmFC(localFilm2));
 
         List<Film> filmList = filmController.getFilmsFC();
         assertEquals(2, filmList.size());
@@ -195,7 +195,7 @@ public class FilmServiceTest {
         Film testFilm2 = filmController.addFilmFC(new Film("Красная перепёлка", "Шпионский триллер",
                 LocalDate.of(2018,3, 2), 140, 10));
 
-        filmController.deleteFilmFC("1");
+        filmController.deleteFilmFC(1);
         List<Film> filmList = filmController.getFilmsFC();
         assertEquals(1, filmList.size());
         assertTrue(filmList.contains(testFilm2));
@@ -209,14 +209,8 @@ public class FilmServiceTest {
         Film testFilm2 = filmController.addFilmFC(new Film("Красная перепёлка", "Шпионский триллер",
                 LocalDate.of(2018,3, 2), 140, 10));
 
-        assertThrows(FilmWithoutIDException.class, () -> filmController.deleteFilmFC("4"));
+        assertThrows(FilmorateObjectException.class, () -> filmController.deleteFilmFC(4));
         List<Film> filmList = filmController.getFilmsFC();
-        assertEquals(2, filmList.size());
-        assertTrue(filmList.contains(testFilm1));
-        assertTrue(filmList.contains(testFilm2));
-
-        assertThrows(FilmWithoutIDException.class, () -> filmController.deleteFilmFC(null));
-        filmList = filmController.getFilmsFC();
         assertEquals(2, filmList.size());
         assertTrue(filmList.contains(testFilm1));
         assertTrue(filmList.contains(testFilm2));
@@ -229,9 +223,9 @@ public class FilmServiceTest {
 
         Film testFilm2 = filmController.addFilmFC(new Film("Красная перепёлка", "Шпионский триллер",
                 LocalDate.of(2018,3, 2), 140, 10));
-        testFilm2.setId(2);
+        testFilm2.setId(2L);
 
-        assertEquals(testFilm2, filmController.getFilmFC("2"));
+        assertEquals(testFilm2, filmController.getFilmFC(2));
     }
 
     @Test
@@ -242,9 +236,7 @@ public class FilmServiceTest {
         filmController.addFilmFC(new Film("Красная перепёлка", "Шпионский триллер",
                 LocalDate.of(2018,3, 2), 140, 10));
 
-        assertThrows(FilmWithoutIDException.class, () -> filmController.getFilmFC("5"));
-
-        assertThrows(FilmWithoutIDException.class, () -> filmController.getFilmFC(null));
+        assertThrows(FilmorateObjectException.class, () -> filmController.getFilmFC(5));
     }
 
     @Test
@@ -257,10 +249,10 @@ public class FilmServiceTest {
 
         filmController.addFilmFC(new Film("Красная перепёлка", "Шпионский триллер",
                 LocalDate.of(2018,3, 2), 140, 10));
-        filmController.putLikeFC("2", "1");
+        filmController.putLikeFC(2, 1);
 
-        assertEquals(1, filmController.getFilmFC("2").getLikes().size());
-        assertTrue(filmController.getFilmFC("2").getLikes().contains(1));
+        assertEquals(1, filmController.getFilmFC(2).getLikes().size());
+        assertTrue(filmController.getFilmFC(2).getLikes().contains(1L));
     }
 
     @Test
@@ -271,13 +263,12 @@ public class FilmServiceTest {
         filmController.addFilmFC(new Film("Красная перепёлка", "Шпионский триллер",
                 LocalDate.of(2018,3, 2), 140, 10));
 
-        assertThrows(UserWithoutIDException.class, () -> filmController.putLikeFC("1", "1"));
+        assertThrows(FilmorateObjectException.class, () -> filmController.putLikeFC(1, 1));
 
         userStorage.addUser(new User("email@yandex.ru", "user1",
                 LocalDate.of(1990, 1, 1)));
 
-        assertThrows(FilmWithoutIDException.class, () -> filmController.putLikeFC("5", "1"));
-        assertThrows(FilmWithoutIDException.class, () -> filmController.putLikeFC(null, "1"));
+        assertThrows(FilmorateObjectException.class, () -> filmController.putLikeFC(5, 1));
     }
 
     @Test
@@ -291,8 +282,8 @@ public class FilmServiceTest {
         filmController.addFilmFC(new Film("Красная перепёлка", "Шпионский триллер",
                 LocalDate.of(2018,3, 2), 140, 10));
 
-        filmController.putLikeFC("2", "1");
-        assertEquals(0, filmController.deleteLikeFC("2", "1").getLikes().size());
+        filmController.putLikeFC(2, 1);
+        assertEquals(0, filmController.deleteLikeFC(2, 1).getLikes().size());
     }
 
     @Test
@@ -306,41 +297,40 @@ public class FilmServiceTest {
         filmController.addFilmFC(new Film("Красная перепёлка", "Шпионский триллер",
                 LocalDate.of(2018,3, 2), 140, 10));
 
-        assertThrows(FilmWithoutIDException.class, () -> filmController.deleteLikeFC("5", "1"));
-        assertThrows(FilmWithoutIDException.class, () -> filmController.deleteLikeFC(null, "1"));
+        assertThrows(FilmorateObjectException.class, () -> filmController.deleteLikeFC(5, 1));
     }
 
     @Test
     void shouldGetMostLikedFilms() {
         forTestMostLikedFilms();
 
-        assertEquals(4, filmController.getMostLikedFilmsFC("7").size());
+        assertEquals(4, filmController.getMostLikedFilmsFC(7).size());
         assertEquals("Довакин меняет профессию",
-                filmController.getMostLikedFilmsFC("5").get(0).getName());
+                filmController.getMostLikedFilmsFC(5).get(0).getName());
         assertEquals("Gravity Loops",
-                filmController.getMostLikedFilmsFC("6").get(1).getName());
+                filmController.getMostLikedFilmsFC(6).get(1).getName());
         assertEquals("На Мюнхен",
-                filmController.getMostLikedFilmsFC("7").get(2).getName());
+                filmController.getMostLikedFilmsFC(7).get(2).getName());
         assertEquals("Красная перепёлка",
-                filmController.getMostLikedFilmsFC("8").get(3).getName());
+                filmController.getMostLikedFilmsFC(8).get(3).getName());
 
-        assertEquals(2, filmController.getMostLikedFilmsFC("2").size());
+        assertEquals(2, filmController.getMostLikedFilmsFC(2).size());
         assertEquals("Довакин меняет профессию",
-                filmController.getMostLikedFilmsFC("2").get(0).getName());
+                filmController.getMostLikedFilmsFC(2).get(0).getName());
         assertEquals("Gravity Loops",
-                filmController.getMostLikedFilmsFC("2").get(1).getName());
+                filmController.getMostLikedFilmsFC(2).get(1).getName());
 
-        assertEquals(1, filmController.getMostLikedFilmsFC("1").size());
+        assertEquals(1, filmController.getMostLikedFilmsFC(1).size());
         assertEquals("Довакин меняет профессию",
-                filmController.getMostLikedFilmsFC("1").get(0).getName());
+                filmController.getMostLikedFilmsFC(1).get(0).getName());
     }
 
     @Test
     void shouldNotGetMostLikedFilms() {
         forTestMostLikedFilms();
 
-        assertThrows(FilmIncorrectCountException.class, () -> filmController.getMostLikedFilmsFC("0"));
-        assertThrows(FilmIncorrectCountException.class, () -> filmController.getMostLikedFilmsFC("-1"));
+        assertThrows(FilmorateObjectException.class, () -> filmController.getMostLikedFilmsFC(0));
+        assertThrows(FilmorateObjectException.class, () -> filmController.getMostLikedFilmsFC(-1));
     }
 
     private void forTestMostLikedFilms() {
@@ -365,11 +355,11 @@ public class FilmServiceTest {
         filmController.addFilmFC(new Film("Довакин меняет профессию", "Комедия, ужасы",
                 LocalDate.of(2017, 5, 5), 120, 6));
 
-        filmController.putLikeFC("4","1");
-        filmController.putLikeFC("4","2");
-        filmController.putLikeFC("4","3");
-        filmController.putLikeFC("3","2");
-        filmController.putLikeFC("3","3");
-        filmController.putLikeFC("1","3");
+        filmController.putLikeFC(4,1);
+        filmController.putLikeFC(4,2);
+        filmController.putLikeFC(4,3);
+        filmController.putLikeFC(3,2);
+        filmController.putLikeFC(3,3);
+        filmController.putLikeFC(1,3);
     }
 }

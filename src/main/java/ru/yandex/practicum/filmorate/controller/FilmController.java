@@ -2,17 +2,15 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.logEnum.FilmEnums.InfoFilmEnums.InfoFilmControllerEnum;
-import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.filmService.FilmService;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import javax.validation.Valid;
 import java.util.List;
 
 @Slf4j
-@Component
 @RestController
 @RequestMapping("/films")
 public class FilmController {
@@ -31,7 +29,7 @@ public class FilmController {
     }
 
     @DeleteMapping
-    public void deleteFilmFC(@RequestBody String filmID) {
+    public void deleteFilmFC(@RequestBody long filmID) {
         log.info(InfoFilmControllerEnum.REQUEST_FILM_CONTROLLER_DELETE_FILM.getInfo(String.valueOf(filmID)));
         filmService.deleteFilmFS(filmID);
     }
@@ -43,28 +41,28 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public Film getFilmFC(@PathVariable("id") String filmID) {
-        log.info(InfoFilmControllerEnum.REQUEST_FILM_CONTROLLER_GET_FILM.getInfo(filmID));
+    public Film getFilmFC(@PathVariable("id") long filmID) {
+        log.info(InfoFilmControllerEnum.REQUEST_FILM_CONTROLLER_GET_FILM.getInfo(String.valueOf(filmID)));
         return filmService.getFilmFS(filmID);
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public Film putLikeFC(@PathVariable("id") String filmID, @PathVariable("userId") String userID) {
+    public Film putLikeFC(@PathVariable("id") long filmID, @PathVariable("userId") long userID) {
         log.info(InfoFilmControllerEnum.REQUEST_FILM_CONTROLLER_PUT_LIKE.getInfo(filmID + "/" + userID));
         return filmService.putLikeFS(filmID, userID);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public Film deleteLikeFC(@PathVariable("id") String filmID, @PathVariable("userId") String userID) {
+    public Film deleteLikeFC(@PathVariable("id") long filmID, @PathVariable("userId") long userID) {
         log.info(InfoFilmControllerEnum.REQUEST_FILM_CONTROLLER_DELETE_LIKE.getInfo(filmID + "/" + userID));
         return filmService.deleteLikeFS(filmID, userID);
     }
 
     @GetMapping("/popular")
     public List<Film> getMostLikedFilmsFC(@RequestParam(
-            defaultValue = DEFAULT_COUNT_OF_MOST_LIKED_FILMS) String count) {
-        log.info(InfoFilmControllerEnum.REQUEST_FILM_CONTROLLER_GET_MOST_LIKED_FILMS.getInfo(count));
-        return filmService.getMostLikedFilmsFS(Integer.parseInt(count));
+            defaultValue = DEFAULT_COUNT_OF_MOST_LIKED_FILMS) int count) {
+        log.info(InfoFilmControllerEnum.REQUEST_FILM_CONTROLLER_GET_MOST_LIKED_FILMS.getInfo(String.valueOf(count)));
+        return filmService.getMostLikedFilmsFS(count);
     }
 
     @GetMapping

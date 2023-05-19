@@ -2,17 +2,15 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.logEnum.UserEnums.InfoFilmEnums.InfoUserControllerEnum;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.service.userService.UserService;
 
 import javax.validation.Valid;
 import java.util.List;
 
 @Slf4j
-@Component
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -30,8 +28,8 @@ public class UserController {
     }
 
     @DeleteMapping
-    public void deleteUserUC(@RequestBody String userID) {
-        log.info(InfoUserControllerEnum.REQUEST_USER_CONTROLLER_DELETE_USER.getInfo(userID));
+    public void deleteUserUC(@RequestBody long userID) {
+        log.info(InfoUserControllerEnum.REQUEST_USER_CONTROLLER_DELETE_USER.getInfo(String.valueOf(userID)));
         userService.deleteUserUS(userID);
     }
 
@@ -42,20 +40,20 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public User getUserUC(@PathVariable("id") String userID) {
-        log.info(InfoUserControllerEnum.REQUEST_USER_CONTROLLER_GET_USER.getInfo(userID));
+    public User getUserUC(@PathVariable("id") long userID) {
+        log.info(InfoUserControllerEnum.REQUEST_USER_CONTROLLER_GET_USER.getInfo(String.valueOf(userID)));
         return userService.getUserUS(userID);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public User addFriendUC(@PathVariable("id") String userID, @PathVariable("friendId") String friendID) {
+    public User addFriendUC(@PathVariable("id") long userID, @PathVariable("friendId") long friendID) {
         log.info(InfoUserControllerEnum.REQUEST_USER_CONTROLLER_ADD_FRIEND_USER
                 .getInfo(userID + "/" + friendID));
         return userService.addFriendUS(userID, friendID);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public User deleteFriendUC(@PathVariable("id") String userID, @PathVariable("friendId") String friendID) {
+    public User deleteFriendUC(@PathVariable("id") long userID, @PathVariable("friendId") long friendID) {
         log.info(InfoUserControllerEnum.REQUEST_USER_CONTROLLER_DELETE_FRIEND_USER
                 .getInfo(userID + "/" + friendID));
         return userService.deleteFriendUS(userID, friendID);
@@ -68,14 +66,14 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public List<User> getFriendsUC(@PathVariable("id") String userID) {
-        log.info(InfoUserControllerEnum.REQUEST_USER_CONTROLLER_GET_FRIENDS_USER.getInfo(userID));
+    public List<User> getFriendsUC(@PathVariable("id") long userID) {
+        log.info(InfoUserControllerEnum.REQUEST_USER_CONTROLLER_GET_FRIENDS_USER.getInfo(String.valueOf(userID)));
         return userService.getFriendsUS(userID);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public List<User> getCommonFriendsUC(@PathVariable("id") String userID,
-                                            @PathVariable("otherId") String otherID) {
+    public List<User> getCommonFriendsUC(@PathVariable("id") long userID,
+                                            @PathVariable("otherId") long otherID) {
         log.info(InfoUserControllerEnum.REQUEST_USER_CONTROLLER_GET_COMMON_FRIENDS_USER
                 .getInfo(userID + "/" + otherID));
         return userService.getCommonFriendsUS(userID, otherID);

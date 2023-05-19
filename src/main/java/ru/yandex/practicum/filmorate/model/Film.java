@@ -8,7 +8,7 @@ import java.util.Set;
 
 @lombok.Data
 public class Film {
-    private Integer id;
+    private Long id;
     @NotBlank
     private final String name;
     private final String description;
@@ -17,5 +17,5 @@ public class Film {
     @NotNull
     private final Integer duration;
     private final Integer rate;
-    private Set<Integer> likes = new HashSet<>();
+    private Set<Long> likes = new HashSet<>();
 }
