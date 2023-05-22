@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.storage;
 
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.Map;
+import java.util.List;
 
 public interface FilmStorage {
     public Film addFilm(Film film);
@@ -13,7 +13,7 @@ public interface FilmStorage {
 
     public boolean isContainsFilm(long filmID);
 
-    public Map<Long, Film> getFilms();
+    public List<Film> getFilms();
 
     public  Film getFilm(long filmID);
 }

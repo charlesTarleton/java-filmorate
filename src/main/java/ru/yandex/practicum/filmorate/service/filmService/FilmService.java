@@ -87,10 +87,10 @@ public class FilmService {
             throw new FilmorateObjectException(UserExceptionMessages
                     .USER_ID_NOT_CONTAINS_EXCEPTION_MESSAGE.getMessage());
         }
-        String filmName = filmStorage.getFilms().get(filmID).getName();
-        log.info(InfoFilmSuccessEnum.SUCCESS_LIKE_FILM.getInfo(filmID + "/" + filmName));
-        filmStorage.getFilms().get(filmID).getLikes().add(userID);
-        return filmStorage.getFilms().get(filmID);
+        Film film = filmStorage.getFilm(filmID);
+        film.getLikes().add(userID);
+        log.info(InfoFilmSuccessEnum.SUCCESS_LIKE_FILM.getInfo(filmID + "/" + film.getName()));
+        return film;
     }
 
     public Film deleteLikeFS(long filmID, long userID) {
@@ -105,21 +105,21 @@ public class FilmService {
             throw new FilmorateObjectException(UserExceptionMessages
                     .USER_ID_NOT_CONTAINS_EXCEPTION_MESSAGE.getMessage());
         }
-        if (!filmStorage.getFilms().get(filmID).getLikes().contains(userID)) {
+        Film film = filmStorage.getFilm(filmID);
+        if (!film.getLikes().contains(userID)) {
             log.error(ErrorFilmEnum.FAIL_FILM_ID.getFilmError(filmID));
             throw new FilmorateObjectException(FilmExceptionMessages
                     .FILM_NOT_CONTAINS_LIKE_EXCEPTION_MESSAGE.getMessage());
         }
-        String filmName = filmStorage.getFilms().get(filmID).getName();
-        log.info(InfoFilmSuccessEnum.SUCCESS_DISLIKE_FILM.getInfo(filmID + "/" + filmName));
-        filmStorage.getFilms().get(filmID).getLikes().remove(userID);
-        return filmStorage.getFilms().get(filmID);
+        film.getLikes().remove(userID);
+        log.info(InfoFilmSuccessEnum.SUCCESS_DISLIKE_FILM.getInfo(filmID + "/" + film.getName()));
+        return film;
     }
 
     public List<Film> getFilmsFS() {
         log.info(InfoFilmServiceEnum.REQUEST_FILM_SERVICE_GET_FILMS.getMessage());
         log.info(InfoFilmSuccessEnum.SUCCESS_GET_FILMS.getMessage());
-        return new ArrayList<>(filmStorage.getFilms().values());
+        return filmStorage.getFilms();
     }
 
     public List<Film> getMostLikedFilmsFS(int countFilms) {
@@ -128,11 +128,8 @@ public class FilmService {
             log.error(ErrorFilmEnum.FAIL_FILM_COUNT.getFilmError(countFilms));
             throw new FilmorateObjectException(FilmExceptionMessages.FILM_COUNT_EXCEPTION_MESSAGE.getMessage());
         }
-        if (countFilms > filmStorage.getFilms().size()) {
-            countFilms = filmStorage.getFilms().size();
-        }
         log.info(InfoFilmSuccessEnum.SUCCESS_GET_MOST_LIKED_FILMS.getInfo(String.valueOf(countFilms)));
-            return filmStorage.getFilms().values().stream()
+            return filmStorage.getFilms().stream()
                     .sorted(MOST_LIKED_FILMS_COMPARATOR).limit(countFilms).collect(Collectors.toList());
     }
 

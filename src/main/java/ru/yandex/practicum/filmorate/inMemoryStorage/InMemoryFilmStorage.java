@@ -7,7 +7,9 @@ import ru.yandex.practicum.filmorate.logEnum.FilmEnums.InfoFilmEnums.InfoFilmSuc
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -19,21 +21,22 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film addFilm(Film film) {
         log.info(InfoFilmStorageEnum.REQUEST_FILM_STORAGE_ADD_FILM.getInfo(film.toString()));
         film.setId(globalFilmID);
-        log.info(InfoFilmSuccessEnum.SUCCESS_ADD_FILM.getInfo(film.getId() + "/" + film.getName()));
         films.put(globalFilmID++, film);
+        log.info(InfoFilmSuccessEnum.SUCCESS_ADD_FILM.getInfo(film.getId() + "/" + film.getName()));
         return film;
     }
 
     public void deleteFilm(long filmID) {
         log.info(InfoFilmStorageEnum.REQUEST_FILM_STORAGE_DELETE_FILM.getInfo(String.valueOf(filmID)));
-        log.info(InfoFilmSuccessEnum.SUCCESS_DELETE_FILM.getInfo(filmID + "/" + films.get(filmID).getName()));
+        String filmName = films.get(filmID).getName();
         films.remove(filmID);
+        log.info(InfoFilmSuccessEnum.SUCCESS_DELETE_FILM.getInfo(filmID + "/" + filmName));
     }
 
     public Film updateFilm(long filmID, Film film) {
         log.info(InfoFilmStorageEnum.REQUEST_FILM_STORAGE_UPDATE_FILM.getInfo(film.toString()));
-        log.info(InfoFilmSuccessEnum.SUCCESS_UPDATE_FILM.getInfo(filmID + "/" + film.getName()));
         films.put(filmID, film);
+        log.info(InfoFilmSuccessEnum.SUCCESS_UPDATE_FILM.getInfo(filmID + "/" + film.getName()));
         return film;
     }
 
@@ -49,7 +52,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         return films.get(filmID);
     }
 
-    public Map<Long, Film> getFilms() {
-        return films;
+    public List<Film> getFilms() {
+        return new ArrayList<>(films.values());
     }
 }

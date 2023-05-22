@@ -7,7 +7,9 @@ import ru.yandex.practicum.filmorate.logEnum.UserEnums.InfoFilmEnums.InfoUserSuc
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -21,14 +23,15 @@ public class InMemoryUserStorage implements UserStorage {
         user.setId(globalUserID);
         users.put(globalUserID++, user);
         log.info(InfoUserSuccessEnum.SUCCESS_ADD_USER.getInfo(user.getId() + "/" + user.getLogin()));
-        return user;
+        return user; // переместил лог успеха так близко к получению результата, как мог
     }
 
     public void deleteUser(long userID) {
         log.info(InfoUserStorageEnum.REQUEST_USER_STORAGE_DELETE_USER.getInfo(String.valueOf(userID)));
-        log.info(InfoUserSuccessEnum.SUCCESS_DELETE_USER
-                .getInfo(users.get(userID).getId() + "/" + users.get(userID).getLogin()));
+        String userLogin = users.get(userID).getLogin();
         users.remove(userID);
+        log.info(InfoUserSuccessEnum.SUCCESS_DELETE_USER
+                .getInfo(userID + "/" + userLogin));
     }
 
     public User updateUser(long userID, User user) {
@@ -50,7 +53,7 @@ public class InMemoryUserStorage implements UserStorage {
         return users.get(userID);
     }
 
-    public Map<Long, User> getUsers() {
-        return users;
+    public List<User> getUsers() {
+        return new ArrayList<>(users.values());
     }
 }

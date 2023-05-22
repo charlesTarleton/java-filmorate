@@ -14,8 +14,8 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -43,21 +43,19 @@ public class UserService {
 
     public void deleteUserUS(long userID) {
         log.info(InfoUserServiceEnum.REQUEST_USER_SERVICE_DELETE_USER.getInfo(String.valueOf(userID)));
-        if (!userStorage.getUsers().containsKey(userID)) {
+        if (!userStorage.isContainsUser(userID)) {
             log.error(ErrorUserEnum.FAIL_USER_ID.getUserError(userID));
             throw new FilmorateObjectException(UserExceptionMessages
                     .USER_ID_NOT_CONTAINS_EXCEPTION_MESSAGE.getMessage());
         }
         userStorage.deleteUser(userID);
-        userStorage.getUsers().keySet().forEach(localUserID -> userStorage
-                .getUsers().get(localUserID).getUserFriends().remove(userID));
-        filmStorage.getFilms().keySet().forEach(localFilmID -> filmStorage
-                .getFilms().get(localFilmID).getLikes().remove(userID));
+        userStorage.getUsers().forEach(user -> user.getUserFriends().remove(userID));
+        filmStorage.getFilms().forEach(film -> film.getLikes().remove(userID));
     }
 
     public User updateUserUS(long userID, User user) {
         log.info(InfoUserServiceEnum.REQUEST_USER_SERVICE_UPDATE_USER.getInfo(user.toString()));
-        if (!userStorage.getUsers().containsKey(userID)) {
+        if (!userStorage.isContainsUser(userID)) {
             log.error(ErrorUserEnum.FAIL_USER_ID.getUserError(userID));
             throw new FilmorateObjectException(UserExceptionMessages
                     .USER_ID_NOT_CONTAINS_EXCEPTION_MESSAGE.getMessage());
@@ -89,10 +87,10 @@ public class UserService {
             throw new FilmorateObjectException(UserExceptionMessages
                     .USER_ID_NOT_CONTAINS_EXCEPTION_MESSAGE.getMessage());
         }
-        userStorage.getUsers().get(userID).getUserFriends().add(friendID);
-        userStorage.getUsers().get(friendID).getUserFriends().add(userID);
+        userStorage.getUser(userID).getUserFriends().add(friendID);
+        userStorage.getUser(friendID).getUserFriends().add(userID);
         log.info(InfoUserSuccessEnum.SUCCESS_ADD_FRIEND_USER.getInfo(userID + "/" + friendID));
-        return userStorage.getUsers().get(friendID);
+        return userStorage.getUser(friendID);
     }
 
     public User deleteFriendUS(long userID, long friendID) {
@@ -108,16 +106,16 @@ public class UserService {
             throw new FilmorateObjectException(UserExceptionMessages
                     .USER_ID_NOT_CONTAINS_EXCEPTION_MESSAGE.getMessage());
         }
-        userStorage.getUsers().get(userID).getUserFriends().remove(friendID);
-        userStorage.getUsers().get(friendID).getUserFriends().remove(userID);
+        userStorage.getUser(userID).getUserFriends().remove(friendID);
+        userStorage.getUser(friendID).getUserFriends().remove(userID);
         log.info(InfoUserSuccessEnum.SUCCESS_DELETE_FRIEND_USER.getInfo(userID + "/" + friendID));
-        return userStorage.getUsers().get(friendID);
+        return userStorage.getUser(friendID);
     }
 
     public List<User> getUsersUS() {
         log.info(InfoUserServiceEnum.REQUEST_USER_SERVICE_GET_USERS.getMessage());
         log.info(InfoUserSuccessEnum.SUCCESS_GET_USERS.getMessage());
-        return new ArrayList<>(userStorage.getUsers().values());
+        return userStorage.getUsers();
     }
 
     public List<User> getFriendsUS(long userID) {
@@ -127,8 +125,10 @@ public class UserService {
                     .USER_ID_NOT_CONTAINS_EXCEPTION_MESSAGE.getMessage());
         }
         log.info(InfoUserSuccessEnum.SUCCESS_GET_FRIENDS_USER.getInfo(String.valueOf(userID)));
-        return userStorage.getUsers().get(userID).getUserFriends().stream()
-                .map(key -> userStorage.getUsers().get(key)).collect(Collectors.toList());
+        Set<Long> userFriends = userStorage.getUser(userID).getUserFriends();
+        return userStorage.getUsers().stream()
+                .filter(localUser -> userFriends.contains(localUser.getId())).collect(Collectors.toList());
+
     }
 
     public List<User> getCommonFriendsUS(long userID, long otherID) {
@@ -139,9 +139,10 @@ public class UserService {
                     .USER_ID_NOT_CONTAINS_EXCEPTION_MESSAGE.getMessage());
         }
         log.info(InfoUserSuccessEnum.SUCCESS_GET_COMMON_FRIENDS_USER.getInfo(userID + "/" + otherID));
-        return userStorage.getUsers().get(userID).getUserFriends().stream().filter(friendID -> userStorage
-                        .getUsers().get(otherID).getUserFriends().contains(friendID)).map(friendID -> userStorage
-                        .getUsers().get(friendID)).collect(Collectors.toList());
+        Set<Long> userFriends = userStorage.getUser(userID).getUserFriends();
+        Set<Long> otherFriends = userStorage.getUser(otherID).getUserFriends();
+        return userStorage.getUsers().stream().filter(localUser -> userFriends.contains(localUser.getId()) &&
+                otherFriends.contains(localUser.getId())).collect(Collectors.toList());
     }
 
     private void validateUser(@Valid User user) {
