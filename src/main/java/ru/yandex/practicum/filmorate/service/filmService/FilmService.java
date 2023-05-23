@@ -21,8 +21,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class FilmService {
-    protected final FilmStorage filmStorage;
-    protected final UserStorage userStorage;
+    private final FilmStorage filmStorage;
+    private final UserStorage userStorage;
     private static final LocalDate BIRTHDAY_MOVIE = LocalDate.of(1895, 12, 28);
     private static final Comparator<Film> MOST_LIKED_FILMS_COMPARATOR = Comparator
             .comparingInt(film -> -film.getLikes().size());

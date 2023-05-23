@@ -17,5 +17,5 @@ public class Film {
     @NotNull
     private final Integer duration;
     private final Integer rate;
-    private Set<Long> likes = new HashSet<>();
+    private final Set<Long> likes = new HashSet<>();
 }
