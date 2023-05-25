@@ -1,5 +1,6 @@
 # java-filmorate
-![SQL ТЗ 10,5 картинка для наглядности](https://github.com/charlesTarleton/java-filmorate/assets/120471175/b45224c3-1314-4a27-94c8-5f9bf3b877e4)
+![Схема базы данных filmorate](https://github.com/charlesTarleton/java-filmorate/assets/120471175/ce332b42-dfc6-4a56-9fc3-e88e4d400fb1)
+
 
 ########### Запрос при добавлении/обновлении/получении фильма или добавления/удаления лайка к фильму ###########
 SELECT f.film_id,
