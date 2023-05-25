@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.model.filmModel;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -18,4 +18,6 @@ public class Film {
     private final Integer duration;
     private final Integer rate;
     private final Set<Long> likes = new HashSet<>();
+    private final Genre genre;
+    private final AdultRate adultRate;
 }
