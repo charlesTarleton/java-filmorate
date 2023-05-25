@@ -1,66 +1,81 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.logEnum.ErrorEnum;
-import ru.yandex.practicum.filmorate.logEnum.InfoEnum;
+import ru.yandex.practicum.filmorate.logEnum.UserEnums.InfoFilmEnums.InfoUserControllerEnum;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.exception.IncorrectUserExceptions.*;
-import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.service.userService.UserService;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    private int usersId = 1;
-    private final UserService userService = new UserService();
+    private final UserService userService;
+
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @PostMapping
-    public User createUser(@Valid @RequestBody User user) {
-        log.info(InfoEnum.GET_NEW_USER_CREATE_REQUEST.getInfo(user.toString()));
-        if (user.getId() != null) {
-            log.error(ErrorEnum.FAIL_ID.getUserError(user.getId(), user.getLogin(), user.getId()));
-            throw new UserWithIdCreateException();
-        }
-        checkUser(user);
-        user.setId(usersId++);
-        log.info(InfoEnum.SUCCESS_CREATE_USER.getInfo(user.getName()));
-        userService.add(user.getId(), user);
-        return user;
+    public User addUserUC(@Valid @RequestBody User user) {
+        log.info(InfoUserControllerEnum.REQUEST_USER_CONTROLLER_ADD_USER.getInfo(user.toString()));
+        return userService.addUserUS(user);
+    }
+
+    @DeleteMapping
+    public void deleteUserUC(@RequestBody long userID) {
+        log.info(InfoUserControllerEnum.REQUEST_USER_CONTROLLER_DELETE_USER.getInfo(String.valueOf(userID)));
+        userService.deleteUserUS(userID);
     }
 
     @PutMapping
-    public User updateUser(@Valid @RequestBody User user) {
-        log.info(InfoEnum.GET_NEW_USER_UPDATE_REQUEST.getInfo(user.toString()));
-        if (!userService.usersContains(user.getId())) {
-            log.error(ErrorEnum.FAIL_ID.getUserError(user.getId(), user.getLogin(), user.getId()));
-            throw new UserWithoutIdUpdateException();
-        }
-        checkUser(user);
-        log.info(InfoEnum.SUCCESS_UPDATE_USER.getInfo(user.getName()));
-        userService.add(user.getId(), user);
-        return user;
+    public User updateUserUC(@Valid @RequestBody User user) {
+        log.info(InfoUserControllerEnum.REQUEST_USER_CONTROLLER_UPDATE_USER.getInfo(user.toString()));
+        return userService.updateUserUS(user.getId(), user);
+    }
+
+    @GetMapping("/{id}")
+    public User getUserUC(@PathVariable("id") long userID) {
+        log.info(InfoUserControllerEnum.REQUEST_USER_CONTROLLER_GET_USER.getInfo(String.valueOf(userID)));
+        return userService.getUserUS(userID);
+    }
+
+    @PutMapping("/{id}/friends/{friendId}")
+    public User addFriendUC(@PathVariable("id") long userID, @PathVariable("friendId") long friendID) {
+        log.info(InfoUserControllerEnum.REQUEST_USER_CONTROLLER_ADD_FRIEND_USER
+                .getInfo(userID + "/" + friendID));
+        return userService.addFriendUS(userID, friendID);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public User deleteFriendUC(@PathVariable("id") long userID, @PathVariable("friendId") long friendID) {
+        log.info(InfoUserControllerEnum.REQUEST_USER_CONTROLLER_DELETE_FRIEND_USER
+                .getInfo(userID + "/" + friendID));
+        return userService.deleteFriendUS(userID, friendID);
     }
 
     @GetMapping
-    public List<User> getAllUsers() {
-        log.info(InfoEnum.GET_NEW_USER_GET_REQUEST.getMessage());
-        return new ArrayList<>(userService.getUsers().values());
+    public List<User> getUsersUC() {
+        log.info(InfoUserControllerEnum.REQUEST_USER_CONTROLLER_GET_USERS.getMessage());
+        return userService.getUsersUS();
     }
 
-    private void checkUser(@Valid User user) {
-        log.info(InfoEnum.CHECK_USER.getMessage());
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.error(ErrorEnum.FAIL_BIRTHDAY_USER.getUserError(user.getId(), user.getLogin(), user.getBirthday()));
-            throw new UserBirthdayException();
-        }
-        if (user.getName() == null || user.getName().isEmpty()) {
-            user.setName(user.getLogin());
-        }
+    @GetMapping("/{id}/friends")
+    public List<User> getFriendsUC(@PathVariable("id") long userID) {
+        log.info(InfoUserControllerEnum.REQUEST_USER_CONTROLLER_GET_FRIENDS_USER.getInfo(String.valueOf(userID)));
+        return userService.getFriendsUS(userID);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriendsUC(@PathVariable("id") long userID,
+                                            @PathVariable("otherId") long otherID) {
+        log.info(InfoUserControllerEnum.REQUEST_USER_CONTROLLER_GET_COMMON_FRIENDS_USER
+                .getInfo(userID + "/" + otherID));
+        return userService.getCommonFriendsUS(userID, otherID);
     }
 }

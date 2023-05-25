@@ -3,10 +3,12 @@ package ru.yandex.practicum.filmorate.model;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @lombok.Data
 public class Film {
-    private Integer id;
+    private Long id;
     @NotBlank
     private final String name;
     private final String description;
@@ -15,4 +17,5 @@ public class Film {
     @NotNull
     private final Integer duration;
     private final Integer rate;
+    private final Set<Long> likes = new HashSet<>();
 }
