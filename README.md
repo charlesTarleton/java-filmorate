@@ -1,13 +1,13 @@
 # java-filmorate
 Template repository for Filmorate project.
-![](src\main\resources\Схема базы данных filmorate.PNG)
+![](src/main/resources/filmorate_database_sheme.PNG)
 
 <details>
     <summary>Запрос при добавлении/обновлении/получении фильма или добавления/удаления лайка к фильму</summary>
     ```sql
     SELECT f.film_id, 
            f.film_name, 
-           f.film_descryption, 
+           f.film_description, 
            f.film_release_date, 
            f.film_duration, 
            f.film_rate, 
@@ -17,7 +17,6 @@ Template repository for Filmorate project.
     FROM film AS f 
     LEFT OUTER JOIN films_genre AS fg ON fg.film_id = f.film_id 
     LEFT OUTER JOIN genre AS g ON g.genre_id = fg.genre_id
-    LEFT OUTER JOIN genre AS ar ON ar.adult_rate_id = f.adult_rate_id
     LEFT OUTER JOIN adult_rate AS ar ON ar.adult_rate_id = f.adult_rate_id
     LEFT OUTER JOIN film_likes AS fl ON fl.film_id = f.film_id
     WHERE f.film_id = /*ID фильма*/;
@@ -73,6 +72,7 @@ Template repository for Filmorate project.
 </details>
 <details>
     <summary>Запрос при добавлении/обновлении/получении пользователя или добавления/удаления друга</summary>
+    ```sql
     SELECT u.*,
            uf.friend_user_id,
            fs.friendship_status_name 
@@ -84,15 +84,18 @@ Template repository for Filmorate project.
 </details>
 <details>
     <summary>Запрос на получение всех пользователей</summary>
+    ```sql
     SELECT u.*,
            uf.friend_user_id,
            fs.friendship_status_name 
     FROM user AS u 
     LEFT OUTER JOIN user_friendship AS uf ON uf.user_id = u.user_id 
     LEFT OUTER JOIN friendship_status AS fs ON fs.friendship_status_id = uf.friendship_status_id;
+    ```
 </details>
 <details>
     <summary>Запрос на получение друзей</summary>
+    ```sql
     SELECT u.*,
            ufr.friend_user_id,
            fs.friendship_status_name 
@@ -101,9 +104,11 @@ Template repository for Filmorate project.
     WHERE u.user_id IN (SELECT uf.friend_user_id 
                         FROM user_friendship AS uf 
                         WHERE uf.user_id = /*ID пользователя, чьих друзей мы ищем*/);
+    ```
 </details>
 <details>
     <summary>Запрос на получение общих друзей</summary>
+    ```sql
     SELECT u.*,
            uf.friend_user_id,
            fs.friendship_status_name 
@@ -117,6 +122,7 @@ Template repository for Filmorate project.
                         SELECT ufs.friend_user_id 
                         FROM user_friendship AS ufs 
                         WHERE ufs.user_id = /*ID второго пользователя*/);
+    ```
 </details>
 
 
