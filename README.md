@@ -132,14 +132,6 @@ Template repository for Filmorate project.
                         FROM user_friendship AS ufs 
                         WHERE ufs.user_id = /*ID второго пользователя*/);
     ```
-</details>
 
 </details>
-
-
-
-
-
-
-
-
+</details>
