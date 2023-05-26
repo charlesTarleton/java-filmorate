@@ -1,6 +1,6 @@
 # java-filmorate
-
 Template repository for Filmorate project.
+
 <details>
 <summary>ТЗ 10.5</summary>
 
@@ -25,7 +25,6 @@ Template repository for Filmorate project.
     WHERE f.film_id = /*ID фильма*/;
     ```
 </details>
-
 <details>
     <summary>Запрос при получении всех фильмов</summary>
     ```sql
@@ -45,7 +44,6 @@ Template repository for Filmorate project.
     LEFT OUTER JOIN film_likes AS fl ON fl.film_id = f.film_id;
     ```
 </details>
-
 <details>
     <summary>Запрос на получение наиболее популярных фильмов в количестве</summary>
     ```sql
@@ -75,7 +73,6 @@ Template repository for Filmorate project.
     LIMIT /*полученное ограничение, если его нет то 10*/;
     ```
 </details>
-
 <details>
     <summary>Запрос при добавлении/обновлении/получении пользователя или добавления/удаления друга</summary>
     ```sql
@@ -88,7 +85,6 @@ Template repository for Filmorate project.
     WHERE u.user_id = ID пользователя;
     ```
 </details>
-
 <details>
     <summary>Запрос на получение всех пользователей</summary>
     ```sql
@@ -100,7 +96,6 @@ Template repository for Filmorate project.
     LEFT OUTER JOIN friendship_status AS fs ON fs.friendship_status_id = uf.friendship_status_id;
     ```
 </details>
-
 <details>
     <summary>Запрос на получение друзей</summary>
     ```sql
@@ -114,7 +109,6 @@ Template repository for Filmorate project.
                         WHERE uf.user_id = /*ID пользователя, чьих друзей мы ищем*/);
     ```
 </details>
-
 <details>
     <summary>Запрос на получение общих друзей</summary>
     ```sql
@@ -132,6 +126,5 @@ Template repository for Filmorate project.
                         FROM user_friendship AS ufs 
                         WHERE ufs.user_id = /*ID второго пользователя*/);
     ```
-
 </details>
 </details>
