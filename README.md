@@ -124,7 +124,3 @@ Template repository for Filmorate project.
                         WHERE ufs.user_id = /*ID второго пользователя*/);
     ```
 </details>
-
-
-
-
