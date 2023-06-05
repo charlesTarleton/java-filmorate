@@ -7,7 +7,8 @@ public enum InfoUserStorageEnum {
     REQUEST_USER_STORAGE_UPDATE_USER("Хранилище пользователей получило запрос на обновление пользователя: "),
     REQUEST_USER_STORAGE_CONTAINS_USER("Хранилище пользователей получило запрос на проверку" +
             " наличия пользователя с ID: "),
-    REQUEST_USER_STORAGE_GET_USERS("Хранилище пользователей получило запрос на получение" +
+    REQUEST_USER_STORAGE_GET_USERS("Хранилище пользователей получило запрос на получение всех пользователей"),
+    REQUEST_USER_STORAGE_GET_USER("Хранилище пользователей получило запрос на получение" +
             " пользователя с ID: ");
     private final String message;
 
@@ -19,4 +20,7 @@ public enum InfoUserStorageEnum {
         return message + value;
     }
 
+    public String getMessage() {
+        return message;
+    }
 }

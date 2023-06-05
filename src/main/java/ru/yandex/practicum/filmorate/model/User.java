@@ -5,8 +5,8 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @lombok.Data
 public class User {
@@ -20,5 +20,5 @@ public class User {
     private String name;
     @NotNull
     private final LocalDate birthday;
-    private final Set<Long> userFriends = new HashSet<>();
+    private Map<Long, Boolean> userFriends = new LinkedHashMap<>(); // true значит принят в друзья
 }

@@ -2,7 +2,11 @@ package ru.yandex.practicum.filmorate.service.filmService;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dbStorage.DatabaseEnums.TblFlmLks;
+import ru.yandex.practicum.filmorate.dbStorage.DatabaseEnums.TblFlms;
+import ru.yandex.practicum.filmorate.dbStorage.DatabaseEnums.TblUsrs;
 import ru.yandex.practicum.filmorate.exception.FilmorateObjectException;
 import ru.yandex.practicum.filmorate.exception.FilmorateValidationException;
 import ru.yandex.practicum.filmorate.logEnum.FilmEnums.ErrorFilmEnum;
@@ -26,6 +30,7 @@ public class FilmService {
     private static final LocalDate BIRTHDAY_MOVIE = LocalDate.of(1895, 12, 28);
     private static final Comparator<Film> MOST_LIKED_FILMS_COMPARATOR = Comparator
             .comparingInt(film -> -film.getLikes().size());
+    private final JdbcTemplate jdbcTemplate = new JdbcTemplate();
 
     @Autowired
     public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
@@ -87,10 +92,12 @@ public class FilmService {
             throw new FilmorateObjectException(UserExceptionMessages
                     .USER_ID_NOT_CONTAINS_EXCEPTION_MESSAGE.getMessage());
         }
-        Film film = filmStorage.getFilm(filmID);
-        film.getLikes().add(userID);
-        log.info(InfoFilmSuccessEnum.SUCCESS_LIKE_FILM.getInfo(filmID + "/" + film.getName()));
-        return film;
+        jdbcTemplate.queryForRowSet(
+                "INSERT INTO " + TblFlmLks.DB_TABLE_FILM_LIKES.getDB() + " (" +
+                        TblFlms.DB_FIELD_FILM_ID.getDB() + ", " + TblUsrs.DB_FIELD_USER_ID.getDB() + " " +
+                        "VALUES (?, ?)", filmID, userID);
+        log.info(InfoFilmSuccessEnum.SUCCESS_LIKE_FILM.getInfo(filmID + "/"));
+        return filmStorage.getFilm(filmID);
     }
 
     public Film deleteLikeFS(long filmID, long userID) {
@@ -105,13 +112,11 @@ public class FilmService {
             throw new FilmorateObjectException(UserExceptionMessages
                     .USER_ID_NOT_CONTAINS_EXCEPTION_MESSAGE.getMessage());
         }
+        jdbcTemplate.queryForRowSet(
+                "DELETE FROM " + TblFlmLks.DB_TABLE_FILM_LIKES.getDB() + " " +
+                        "WHERE " + TblFlms.DB_FIELD_FILM_ID.getDB() + " = ? AND " +
+                        TblUsrs.DB_FIELD_USER_ID.getDB() + " = ?", filmID, userID);
         Film film = filmStorage.getFilm(filmID);
-        if (!film.getLikes().contains(userID)) {
-            log.error(ErrorFilmEnum.FAIL_FILM_ID.getFilmError(filmID));
-            throw new FilmorateObjectException(FilmExceptionMessages
-                    .FILM_NOT_CONTAINS_LIKE_EXCEPTION_MESSAGE.getMessage());
-        }
-        film.getLikes().remove(userID);
         log.info(InfoFilmSuccessEnum.SUCCESS_DISLIKE_FILM.getInfo(filmID + "/" + film.getName()));
         return film;
     }

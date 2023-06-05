@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.logEnum.UserEnums.InfoFilmEnums;
 
 public enum InfoUserSuccessEnum {
     SUCCESS_ADD_USER("Успешное добавление пользователя с ID/логином: "),
-    SUCCESS_DELETE_USER("Успешное удаление пользователя с ID/логином: "),
+    SUCCESS_DELETE_USER("Успешное удаление пользователя с ID: "),
     SUCCESS_UPDATE_USER("Успешное обновление пользователя с ID/логином: "),
     SUCCESS_GET_USER("Успешное получение пользователя с ID/логином: "),
     SUCCESS_ADD_FRIEND_USER("Успешное добавление в друзья - кто кого ID/ID: "),

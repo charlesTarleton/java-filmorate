@@ -2,32 +2,32 @@ package ru.yandex.practicum.filmorate.service.userService;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dbStorage.DatabaseEnums.TblFrndshpSt;
+import ru.yandex.practicum.filmorate.dbStorage.DatabaseEnums.TblUsrFrndshp;
+import ru.yandex.practicum.filmorate.dbStorage.DatabaseEnums.TblUsrs;
 import ru.yandex.practicum.filmorate.exception.FilmorateObjectException;
 import ru.yandex.practicum.filmorate.exception.FilmorateValidationException;
 import ru.yandex.practicum.filmorate.logEnum.UserEnums.ErrorUserEnum;
 import ru.yandex.practicum.filmorate.logEnum.UserEnums.InfoFilmEnums.InfoUserServiceEnum;
 import ru.yandex.practicum.filmorate.logEnum.UserEnums.InfoFilmEnums.InfoUserSuccessEnum;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class UserService {
     private final UserStorage userStorage;
-    private final FilmStorage filmStorage;
+    private final JdbcTemplate jdbcTemplate = new JdbcTemplate();
 
     @Autowired
-    public UserService(UserStorage userStorage, FilmStorage filmStorage) {
+    public UserService(UserStorage userStorage) {
         this.userStorage = userStorage;
-        this.filmStorage = filmStorage;
     }
 
     public User addUserUS(User user) {
@@ -49,8 +49,6 @@ public class UserService {
                     .USER_ID_NOT_CONTAINS_EXCEPTION_MESSAGE.getMessage());
         }
         userStorage.deleteUser(userID);
-        userStorage.getUsers().forEach(user -> user.getUserFriends().remove(userID));
-        filmStorage.getFilms().forEach(film -> film.getLikes().remove(userID));
     }
 
     public User updateUserUS(long userID, User user) {
@@ -87,8 +85,17 @@ public class UserService {
             throw new FilmorateObjectException(UserExceptionMessages
                     .USER_ID_NOT_CONTAINS_EXCEPTION_MESSAGE.getMessage());
         }
-        userStorage.getUser(userID).getUserFriends().add(friendID);
-        userStorage.getUser(friendID).getUserFriends().add(userID);
+        jdbcTemplate.queryForRowSet(
+                "INSERT INTO " + TblUsrFrndshp.DB_TABLE_USER_FRIENDSHIP.getDB() + " (" +
+                        TblUsrs.DB_FIELD_USER_ID.getDB() + ", " +
+                        TblUsrFrndshp.DB_FIELD_FRIEND_USER_ID.getDB() + ", " +
+                        TblFrndshpSt.DB_FIELD_FRIENDSHIP_STATUS_ID.getDB() + ") " +
+                    "VALUES ('?', '?', '2'); " +
+                    "INSERT INTO " + TblUsrFrndshp.DB_TABLE_USER_FRIENDSHIP.getDB() + " (" +
+                        TblUsrs.DB_FIELD_USER_ID.getDB() + ", " +
+                        TblUsrFrndshp.DB_FIELD_FRIEND_USER_ID.getDB() + ", " +
+                        TblFrndshpSt.DB_FIELD_FRIENDSHIP_STATUS_ID.getDB() + ") " +
+                    "VALUES ('?', '?', '2')", userID, friendID, friendID, userID);
         log.info(InfoUserSuccessEnum.SUCCESS_ADD_FRIEND_USER.getInfo(userID + "/" + friendID));
         return userStorage.getUser(friendID);
     }
@@ -106,8 +113,14 @@ public class UserService {
             throw new FilmorateObjectException(UserExceptionMessages
                     .USER_ID_NOT_CONTAINS_EXCEPTION_MESSAGE.getMessage());
         }
-        userStorage.getUser(userID).getUserFriends().remove(friendID);
-        userStorage.getUser(friendID).getUserFriends().remove(userID);
+        jdbcTemplate.queryForRowSet(
+                "DELETE FROM " + TblUsrFrndshp.DB_TABLE_USER_FRIENDSHIP.getDB() + " " +
+                    "WHERE " + TblUsrs.DB_FIELD_USER_ID.getDB() + " = ? AND " +
+                        TblUsrFrndshp.DB_FIELD_FRIEND_USER_ID.getDB() + " = ?; " +
+                    "DELETE FROM " + TblUsrFrndshp.DB_TABLE_USER_FRIENDSHIP.getDB() + " " +
+                    "WHERE " + TblUsrs.DB_FIELD_USER_ID.getDB() + " = ? AND " +
+                        TblUsrFrndshp.DB_FIELD_FRIEND_USER_ID.getDB() + " = ?",
+                userID, friendID, friendID, userID);
         log.info(InfoUserSuccessEnum.SUCCESS_DELETE_FRIEND_USER.getInfo(userID + "/" + friendID));
         return userStorage.getUser(friendID);
     }
@@ -125,10 +138,21 @@ public class UserService {
                     .USER_ID_NOT_CONTAINS_EXCEPTION_MESSAGE.getMessage());
         }
         log.info(InfoUserSuccessEnum.SUCCESS_GET_FRIENDS_USER.getInfo(String.valueOf(userID)));
-        Set<Long> userFriends = userStorage.getUser(userID).getUserFriends();
-        return userStorage.getUsers().stream()
-                .filter(localUser -> userFriends.contains(localUser.getId())).collect(Collectors.toList());
-
+        return jdbcTemplate.query(
+                "SELECT uf." + TblUsrFrndshp.DB_FIELD_FRIEND_USER_ID.getDB() + ", u.* " +
+                "FROM " + TblUsrFrndshp.DB_TABLE_USER_FRIENDSHIP.getDB() + " AS uf " +
+                "LEFT OUTER JOIN " + TblUsrs.DB_TABLE_USERS.getDB() + " AS u " +
+                "ON uf." + TblUsrFrndshp.DB_FIELD_FRIEND_USER_ID.getDB() + " = u." +
+                        TblUsrs.DB_FIELD_USER_ID.getDB() + " " +
+                "WHERE " + TblUsrs.DB_FIELD_USER_ID.getDB() + " = ?", new Long[]{userID}, (rs, rowNum) -> {
+            User user = new User(
+                    rs.getString(TblUsrs.DB_FIELD_USER_EMAIL.getDB()),
+                    rs.getString(TblUsrs.DB_FIELD_USER_LOGIN.getDB()),
+                    rs.getDate(TblUsrs.DB_FIELD_USER_BIRTHDAY.getDB()).toLocalDate());
+            user.setId(userID);
+            user.setName(rs.getString(TblUsrs.DB_FIELD_USER_NAME.getDB()));
+            return user;
+        });
     }
 
     public List<User> getCommonFriendsUS(long userID, long otherID) {
@@ -139,10 +163,20 @@ public class UserService {
                     .USER_ID_NOT_CONTAINS_EXCEPTION_MESSAGE.getMessage());
         }
         log.info(InfoUserSuccessEnum.SUCCESS_GET_COMMON_FRIENDS_USER.getInfo(userID + "/" + otherID));
-        Set<Long> userFriends = userStorage.getUser(userID).getUserFriends();
-        Set<Long> otherFriends = userStorage.getUser(otherID).getUserFriends();
-        return userStorage.getUsers().stream().filter(localUser -> userFriends.contains(localUser.getId()) &&
-                otherFriends.contains(localUser.getId())).collect(Collectors.toList());
+        return jdbcTemplate.query(
+                "SELECT " + TblUsrFrndshp.DB_FIELD_FRIEND_USER_ID.getDB() + " " +
+                "FROM " + TblUsrFrndshp.DB_TABLE_USER_FRIENDSHIP.getDB() + " " +
+                "WHERE " + TblUsrFrndshp.DB_FIELD_FRIEND_USER_ID.getDB() + " IN (?, ?) " +
+                "GROUP BY " + TblUsrFrndshp.DB_FIELD_FRIEND_USER_ID.getDB() + " " +
+                "HAVING COUNT(*) = 2", new Long[]{userID, otherID}, (rs, rowNum) -> {
+            User user = new User(
+                    rs.getString(TblUsrs.DB_FIELD_USER_EMAIL.getDB()),
+                    rs.getString(TblUsrs.DB_FIELD_USER_LOGIN.getDB()),
+                    rs.getDate(TblUsrs.DB_FIELD_USER_BIRTHDAY.getDB()).toLocalDate());
+            user.setId(rs.getLong(TblUsrs.DB_TABLE_USERS.getDB()));
+            user.setName(rs.getString(TblUsrs.DB_FIELD_USER_NAME.getDB()));
+            return user;
+        });
     }
 
     private void validateUser(@Valid User user) {

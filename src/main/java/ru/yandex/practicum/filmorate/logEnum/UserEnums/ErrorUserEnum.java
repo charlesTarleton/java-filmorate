@@ -2,7 +2,8 @@ package ru.yandex.practicum.filmorate.logEnum.UserEnums;
 
 public enum ErrorUserEnum {
     FAIL_USER_ID("Характеристика пользователя: \"id\". Значение: "),
-    FAIL_USER_BIRTHDAY("Характеристика пользователя: \"birthday\". Значение: ");
+    FAIL_USER_BIRTHDAY("Характеристика пользователя: \"birthday\". Значение: "),
+    FAIL_USER_TABLE_VALIDATION("Характеристика пользователя: \"email/login\". Значение: ");
     private final String message;
 
     ErrorUserEnum(String message) {

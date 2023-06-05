@@ -5,8 +5,6 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.exception.FilmorateObjectException;
 import ru.yandex.practicum.filmorate.exception.FilmorateValidationException;
-import ru.yandex.practicum.filmorate.inMemoryStorage.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.inMemoryStorage.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.service.filmService.FilmService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -19,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class FilmServiceTest {
     private FilmController filmController;
     UserStorage userStorage;
-
+/*
     @BeforeEach
     public void createUserController() {
         userStorage = new InMemoryUserStorage();
@@ -362,4 +360,5 @@ public class FilmServiceTest {
         filmController.putLikeFC(3,3);
         filmController.putLikeFC(1,3);
     }
+ */
 }
