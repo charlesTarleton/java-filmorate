@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.logEnum.UserEnums.InfoFilmEnums.InfoUserSuc
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
+import java.sql.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,9 +37,9 @@ public class UserDbStorage implements UserStorage {
                         TblUsrs.DB_FIELD_USER_LOGIN.getDB() + ", " +
                         TblUsrs.DB_FIELD_USER_NAME.getDB() + ", " +
                         TblUsrs.DB_FIELD_USER_BIRTHDAY.getDB() + ") " +
-                    "VALUES (?, ?, ?, ?)" + TblUsrs.DB_FIELD_USER_ID.getDB(),
-                user.getEmail(), user.getLogin(), user.getName(), user.getBirthday());
-        user.setId(jdbcTemplate.queryForObject("SELECT IDENTITY()", Long.class));
+                    "VALUES (?, ?, ?, ?)",
+                user.getEmail(), user.getLogin(), user.getName(), Date.valueOf(user.getBirthday()));
+        user.setId(jdbcTemplate.queryForObject("SELECT IDENTITY() FROM users", Long.class));
         return user;
         /*if (userRows.next()) { //Старый вариант кода
             user.setId(userRows.getLong(TblUsrs.DB_FIELD_USER_ID.getDB()));
