@@ -33,14 +33,14 @@ public class ControllerAdvice {
     @ExceptionHandler()
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse fourHundredFourErrorHandle(final FilmorateObjectException exception) {
-        log.info(ControllerLogEnum.FOUR_HUNDRED_FOUR_ERROR_HANDLE.getInfo(exception));
+        log.warn(ERROR_404, exception);
         return new ErrorResponse(ERROR_404, ERROR_404_DESCRIPTION);
     }
 
     @ExceptionHandler()
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse fiveHundredErrorHandle(final Throwable exception) {
-        log.info(ControllerLogEnum.FIVE_HUNDRED_ERROR_HANDLE.getInfo(exception));
+        log.warn(ERROR_500, exception);
         return new ErrorResponse(ERROR_500, ERROR_500_DESCRIPTION);
     }
 

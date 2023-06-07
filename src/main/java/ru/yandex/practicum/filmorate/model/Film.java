@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
-import ru.yandex.practicum.filmorate.model.filmEnums.*;
+import ru.yandex.practicum.filmorate.model.filmFields.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -20,6 +20,6 @@ public class Film {
     private final Integer duration;
     private final Integer rate;
     private Set<Long> likes = new HashSet<>();
-    private final Genre genre;
-    private final AdultRate adultRate;
+    private Set<Genre> genres = new HashSet<>();
+    private final MPA mpa;
 }

@@ -7,17 +7,14 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dbStorage.DatabaseEnums.TblFrndshpSt;
 import ru.yandex.practicum.filmorate.dbStorage.DatabaseEnums.TblUsrFrndshp;
 import ru.yandex.practicum.filmorate.dbStorage.DatabaseEnums.TblUsrs;
-import ru.yandex.practicum.filmorate.exception.FilmorateValidationException;
-import ru.yandex.practicum.filmorate.logEnum.UserEnums.ErrorUserEnum;
 import ru.yandex.practicum.filmorate.logEnum.UserEnums.InfoFilmEnums.InfoUserStorageEnum;
 import ru.yandex.practicum.filmorate.logEnum.UserEnums.InfoFilmEnums.InfoUserSuccessEnum;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.sql.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -29,61 +26,61 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User addUser(User user) {
-        log.info(InfoUserStorageEnum.REQUEST_USER_STORAGE_ADD_USER.getInfo(user.getLogin()));
-        jdbcTemplate.queryForRowSet(
+    public Optional<User> addUser(User user) {
+        log.info(InfoUserStorageEnum.REQUEST_USER_STORAGE_ADD_USER.getInfo(String.valueOf(user)));
+        jdbcTemplate.update(
                 "INSERT INTO " + TblUsrs.DB_TABLE_USERS.getDB() + " (" +
                         TblUsrs.DB_FIELD_USER_EMAIL.getDB() + ", " +
                         TblUsrs.DB_FIELD_USER_LOGIN.getDB() + ", " +
                         TblUsrs.DB_FIELD_USER_NAME.getDB() + ", " +
                         TblUsrs.DB_FIELD_USER_BIRTHDAY.getDB() + ") " +
-                    "VALUES (?, ?, ?, ?)",
+                        "VALUES (?, ?, ?, ?)",
                 user.getEmail(), user.getLogin(), user.getName(), Date.valueOf(user.getBirthday()));
-        user.setId(jdbcTemplate.queryForObject("SELECT IDENTITY() FROM users", Long.class));
-        return user;
-        /*if (userRows.next()) { //Старый вариант кода
-            user.setId(userRows.getLong(TblUsrs.DB_FIELD_USER_ID.getDB()));
-            log.info(InfoUserSuccessEnum.SUCCESS_ADD_USER.getInfo(user.getId() + "/" + user.getLogin()));
-            return user;
-        } else {
-            log.error(ErrorUserEnum.FAIL_USER_TABLE_VALIDATION
-                    .getUserError(user.getEmail() + "/" + user.getLogin()));
-            throw new FilmorateValidationException("email или login");
+        SqlRowSet userRows = jdbcTemplate.queryForRowSet(
+                "SELECT COUNT(*) AS last_id " +
+                "FROM " + TblUsrs.DB_TABLE_USERS.getDB());
+        if (userRows.next()) {
+            user.setId(Integer.toUnsignedLong(userRows.getInt("last_id")));
+            log.info(InfoUserSuccessEnum.SUCCESS_ADD_USER.getInfo(String.valueOf(user.getId())));
+            return Optional.of(user);
         }
-         */
+        return Optional.empty();
     }
 
     @Override
     public void deleteUser(long userID) {
         log.info(InfoUserStorageEnum.REQUEST_USER_STORAGE_DELETE_USER.getInfo(String.valueOf(userID)));
-        jdbcTemplate.queryForRowSet(
+        jdbcTemplate.update(
                 "DELETE FROM " + TblUsrs.DB_TABLE_USERS.getDB() + " " +
-                "WHERE + " + TblUsrs.DB_FIELD_USER_ID.getDB() + " = ?", userID);
+                    "WHERE + " + TblUsrs.DB_FIELD_USER_ID.getDB() + " = ?", userID);
         log.info(InfoUserSuccessEnum.SUCCESS_DELETE_USER.getInfo(String.valueOf(userID)));
     }
 
     @Override
-    public User updateUser(long userID, User user) {
+    public Optional<User> updateUser(long userID, User user) {
         log.info(InfoUserStorageEnum.REQUEST_USER_STORAGE_UPDATE_USER.getInfo(String.valueOf(userID)));
-        SqlRowSet userRows = jdbcTemplate.queryForRowSet(
+        jdbcTemplate.update(
                 "UPDATE " + TblUsrs.DB_TABLE_USERS.getDB() + " " +
-                        "SET " + TblUsrs.DB_FIELD_USER_EMAIL.getDB() + " = ?, " +
+                    "SET " + TblUsrs.DB_FIELD_USER_EMAIL.getDB() + " = ?, " +
                         TblUsrs.DB_FIELD_USER_LOGIN.getDB() + " = ?," +
                         TblUsrs.DB_FIELD_USER_NAME.getDB() + " = ?, " +
                         TblUsrs.DB_FIELD_USER_BIRTHDAY.getDB() + " = ? " +
-                        "WHERE " + TblUsrs.DB_FIELD_USER_ID.getDB() + " = ?; " +
-                        "SELECT * " +
-                        "FROM " + TblUsrs.DB_TABLE_USERS.getDB() + " " +
-                        "WHERE " + TblUsrs.DB_FIELD_USER_ID.getDB() + " = ?",
-                user.getEmail(), user.getLogin(), user.getName(), user.getBirthday(), userID, userID);
+                    "WHERE " + TblUsrs.DB_FIELD_USER_ID.getDB() + " = ?",
+                user.getEmail(), user.getLogin(), user.getName(), user.getBirthday(), userID);
+        SqlRowSet userRows = jdbcTemplate.queryForRowSet(
+                "SELECT * " +
+                    "FROM " + TblUsrs.DB_TABLE_USERS.getDB() + " " +
+                    "WHERE " + TblUsrs.DB_FIELD_USER_ID.getDB() + " = ?", userID);
         if (userRows.next()) {
-            log.info(InfoUserSuccessEnum.SUCCESS_UPDATE_USER.getInfo(user.getId() + "/" + user.getLogin()));
-            return user;
-        } else {
-            log.error(ErrorUserEnum.FAIL_USER_TABLE_VALIDATION
-                    .getUserError(user.getEmail() + "/" + user.getLogin()));
-            throw new FilmorateValidationException("email или login");
+            User localUser = new User(userRows.getString(TblUsrs.DB_FIELD_USER_EMAIL.getDB()),
+                    userRows.getString(TblUsrs.DB_FIELD_USER_LOGIN.getDB()),
+                    userRows.getDate(TblUsrs.DB_FIELD_USER_BIRTHDAY.getDB()).toLocalDate());
+            localUser.setId(userRows.getLong(TblUsrs.DB_FIELD_USER_ID.getDB()));
+            localUser.setName(userRows.getString(TblUsrs.DB_FIELD_USER_NAME.getDB()));
+            log.info(InfoUserSuccessEnum.SUCCESS_UPDATE_USER.getInfo(String.valueOf(userID)));
+            return Optional.of(localUser);
         }
+        return Optional.empty();
     }
 
     @Override
@@ -102,48 +99,101 @@ public class UserDbStorage implements UserStorage {
         log.info(InfoUserSuccessEnum.SUCCESS_GET_USERS.getMessage());
         return jdbcTemplate.query(
                 "SELECT * " +
-                        "FROM " + TblUsrs.DB_TABLE_USERS, (rs, rowNum) -> {
+                    "FROM " + TblUsrs.DB_TABLE_USERS.getDB(), (rs, rowNum) -> {
             User user = new User(rs.getString(TblUsrs.DB_FIELD_USER_EMAIL.getDB()),
                     rs.getString(TblUsrs.DB_FIELD_USER_LOGIN.getDB()),
                     rs.getDate(TblUsrs.DB_FIELD_USER_BIRTHDAY.getDB()).toLocalDate());
             user.setId(rs.getLong(TblUsrs.DB_FIELD_USER_ID.getDB()));
             user.setName(rs.getString(TblUsrs.DB_FIELD_USER_NAME.getDB()));
-            user.setUserFriends(getFriendsUS(user.getId()));
             return user;
         });
     }
 
     @Override
-    public User getUser(long userID) {
+    public Optional<User> getUser(long userID) {
         log.info(InfoUserStorageEnum.REQUEST_USER_STORAGE_GET_USER.getInfo(String.valueOf(userID)));
         SqlRowSet userRows = jdbcTemplate.queryForRowSet(
                 "SELECT * " +
                     "FROM " + TblUsrs.DB_TABLE_USERS.getDB() + " " +
                     "WHERE " + TblUsrs.DB_FIELD_USER_ID.getDB() + " = ?", userID);
-        User user = new User(userRows.getString(TblUsrs.DB_FIELD_USER_EMAIL.getDB()),
-                userRows.getString(TblUsrs.DB_FIELD_USER_LOGIN.getDB()),
-                userRows.getDate(TblUsrs.DB_FIELD_USER_BIRTHDAY.getDB()).toLocalDate());
-        user.setId(userID);
-        user.setName(userRows.getString(TblUsrs.DB_FIELD_USER_NAME.getDB()));
-        user.setUserFriends(getFriendsUS(userID));
-        log.info(InfoUserSuccessEnum.SUCCESS_GET_USER.getInfo(user.getId() + "/" + user.getLogin()));
-        return user;
+        if (userRows.next()) {
+            User user = new User(userRows.getString(TblUsrs.DB_FIELD_USER_EMAIL.getDB()),
+                    userRows.getString(TblUsrs.DB_FIELD_USER_LOGIN.getDB()),
+                    userRows.getDate(TblUsrs.DB_FIELD_USER_BIRTHDAY.getDB()).toLocalDate());
+            user.setId(userID);
+            user.setName(userRows.getString(TblUsrs.DB_FIELD_USER_NAME.getDB()));
+            log.info(InfoUserSuccessEnum.SUCCESS_GET_USER.getInfo(String.valueOf(user.getId())));
+            return Optional.of(user);
+        }
+        return Optional.empty();
     }
 
-    private Map<Long, Boolean> getFriendsUS(long userId) {
-        Map<Long, Boolean> localUserFriends = new LinkedHashMap<>();
-        List<Map<String, Object>> friendshipTable = jdbcTemplate.queryForList(
-                "SELECT " + "uf." + TblUsrFrndshp.DB_FIELD_FRIEND_USER_ID.getDB() + ", " +
-                    "fs." + TblFrndshpSt.DB_FIELD_FRIENDSHIP_STATUS_NAME.getDB() + " " +
-                    "FROM " + TblUsrFrndshp.DB_TABLE_USER_FRIENDSHIP.getDB() + " AS uf " +
-                    "LEFT OUTER JOIN " + TblFrndshpSt.DB_TABLE_FRIENDSHIP_STATUS.getDB() + " AS fs " +
-                    "ON fs." + TblFrndshpSt.DB_FIELD_FRIENDSHIP_STATUS_ID.getDB() + " = uf." +
-                        TblFrndshpSt.DB_FIELD_FRIENDSHIP_STATUS_ID.getDB() + " " +
-                    "WHERE " + TblUsrs.DB_FIELD_USER_ID.getDB() + " = ?", userId);
-        friendshipTable.stream().map(map -> localUserFriends.put(
-                (Long) map.get(TblUsrFrndshp.DB_FIELD_FRIEND_USER_ID.getDB()),
-                Boolean.getBoolean((String)
-                        map.get(TblFrndshpSt.DB_FIELD_FRIENDSHIP_STATUS_NAME.getDB()))));
-        return localUserFriends;
+    public Optional<User> addFriend(long userID, long friendID) {
+        log.info(InfoUserStorageEnum.REQUEST_USER_STORAGE_ADD_FRIEND_USER.getInfo(userID + "/" + friendID));
+        jdbcTemplate.update(
+                "INSERT INTO " + TblUsrFrndshp.DB_TABLE_USER_FRIENDSHIP.getDB() + " (" +
+                        TblUsrs.DB_FIELD_USER_ID.getDB() + ", " +
+                        TblUsrFrndshp.DB_FIELD_FRIEND_USER_ID.getDB() + ", " +
+                        TblFrndshpSt.DB_FIELD_FRIENDSHIP_STATUS_ID.getDB() + ") " +
+                    "VALUES (?, ?, 2)", userID, friendID);
+        log.info(InfoUserSuccessEnum.SUCCESS_ADD_FRIEND_USER.getInfo(String.valueOf(userID)));
+        return getUser(friendID);
+    }
+
+    public Optional<User> deleteFriend(long userID, long friendID) {
+        log.info(InfoUserStorageEnum.REQUEST_USER_STORAGE_DELETE_FRIEND_USER.getInfo(userID + "/" + friendID));
+        jdbcTemplate.update(
+                "DELETE FROM " + TblUsrFrndshp.DB_TABLE_USER_FRIENDSHIP.getDB() + " " +
+                    "WHERE " + TblUsrs.DB_FIELD_USER_ID.getDB() + " = ? AND " +
+                        TblUsrFrndshp.DB_FIELD_FRIEND_USER_ID.getDB() + " = ?; " +
+                    "DELETE FROM " + TblUsrFrndshp.DB_TABLE_USER_FRIENDSHIP.getDB() + " " +
+                    "WHERE " + TblUsrs.DB_FIELD_USER_ID.getDB() + " = ? AND " +
+                        TblUsrFrndshp.DB_FIELD_FRIEND_USER_ID.getDB() + " = ?",
+                userID, friendID, friendID, userID);
+        log.info(InfoUserSuccessEnum.SUCCESS_DELETE_FRIEND_USER.getInfo(String.valueOf(userID)));
+        return getUser(friendID);
+    }
+
+    public List<User> getFriends(long userID) {
+        log.info(InfoUserSuccessEnum.SUCCESS_GET_FRIENDS_USER.getInfo(String.valueOf(userID)));
+        String sql = "SELECT u.* " +
+                "FROM " + TblUsrs.DB_TABLE_USERS.getDB() + " AS u " +
+                "RIGHT OUTER JOIN " + TblUsrFrndshp.DB_TABLE_USER_FRIENDSHIP.getDB() + " AS uf " +
+                "ON uf." + TblUsrFrndshp.DB_FIELD_FRIEND_USER_ID.getDB() + " = u." +
+                TblUsrs.DB_FIELD_USER_ID.getDB() + " " +
+                "WHERE uf." + TblUsrs.DB_FIELD_USER_ID.getDB() + " = ?";
+        log.info(InfoUserSuccessEnum.SUCCESS_GET_FRIENDS_USER.getInfo(String.valueOf(userID)));
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            User user = new User(rs.getString(TblUsrs.DB_FIELD_USER_EMAIL.getDB()),
+                    rs.getString(TblUsrs.DB_FIELD_USER_LOGIN.getDB()),
+                    rs.getDate(TblUsrs.DB_FIELD_USER_BIRTHDAY.getDB()).toLocalDate());
+            user.setId(rs.getLong(TblUsrs.DB_FIELD_USER_ID.getDB()));
+            user.setName(rs.getString(TblUsrs.DB_FIELD_USER_NAME.getDB()));
+            return user;
+        }, userID);
+    }
+
+    public List<User> getCommonFriends(long userID, long otherID) {
+        log.info(InfoUserStorageEnum.REQUEST_USER_STORAGE_GET_COMMON_FRIENDS_USER
+                .getInfo(userID + "/" + otherID));
+        String sql = "SELECT u.* " +
+                "FROM " + TblUsrs.DB_TABLE_USERS.getDB() + " AS u " +
+                "RIGHT OUTER JOIN " + TblUsrFrndshp.DB_TABLE_USER_FRIENDSHIP.getDB() + " AS uf1 " +
+                "ON u." + TblUsrs.DB_FIELD_USER_ID.getDB() + " = uf1." +
+                    TblUsrFrndshp.DB_FIELD_FRIEND_USER_ID.getDB() + " " +
+                "INNER JOIN " + TblUsrFrndshp.DB_TABLE_USER_FRIENDSHIP.getDB() + " AS uf2 " +
+                "ON uf1." + TblUsrFrndshp.DB_FIELD_FRIEND_USER_ID.getDB() + " = uf2." +
+                TblUsrFrndshp.DB_FIELD_FRIEND_USER_ID.getDB() + " " +
+                "WHERE uf1." + TblUsrs.DB_FIELD_USER_ID.getDB() + " = ? AND uf2." +
+                    TblUsrs.DB_FIELD_USER_ID.getDB() + " = ?";
+        log.info(InfoUserSuccessEnum.SUCCESS_GET_COMMON_FRIENDS_USER.getInfo(String.valueOf(userID)));
+        return jdbcTemplate.query(sql, new Object[]{userID, otherID}, (rs, rowNum) -> {
+            User user = new User(rs.getString(TblUsrs.DB_FIELD_USER_EMAIL.getDB()),
+                    rs.getString(TblUsrs.DB_FIELD_USER_LOGIN.getDB()),
+                    rs.getDate(TblUsrs.DB_FIELD_USER_BIRTHDAY.getDB()).toLocalDate());
+                    user.setId(rs.getLong(TblUsrs.DB_FIELD_USER_ID.getDB()));
+                    user.setName(rs.getString(TblUsrs.DB_FIELD_USER_NAME.getDB()));
+                    return user;
+        });
     }
 }

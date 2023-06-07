@@ -11,7 +11,11 @@ public enum InfoFilmControllerEnum {
             " ID фильма/ID пользователя: "),
     REQUEST_FILM_CONTROLLER_GET_FILMS("Контроллер фильмов получил запрос на получение всех фильмов"),
     REQUEST_FILM_CONTROLLER_GET_MOST_LIKED_FILMS("Контроллер фильмов получил запрос на получение" +
-            " самых популярных фильмов в количестве: ");
+            " самых популярных фильмов в количестве: "),
+    REQUEST_FILM_CONTROLLER_GET_GENRES("Контроллер фильмов получил запрос на получение всех жанров"),
+    REQUEST_FILM_CONTROLLER_GET_GENRE("Контроллер фильмов получил запрос на получение жанра с ID: "),
+    REQUEST_FILM_CONTROLLER_GET_ALL_MPA("Контроллер фильмов получил запрос на получение всех рейтингов"),
+    REQUEST_FILM_CONTROLLER_GET_MPA("Контроллер фильмов получил запрос на получение рейтинга с ID: ");
     private final String message;
 
     InfoFilmControllerEnum(String message) {

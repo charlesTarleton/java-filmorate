@@ -1,22 +1,23 @@
 package ru.yandex.practicum.filmorate.dbStorage;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dbStorage.DatabaseEnums.*;
-import ru.yandex.practicum.filmorate.exception.FilmorateValidationException;
-import ru.yandex.practicum.filmorate.logEnum.FilmEnums.ErrorFilmEnum;
 import ru.yandex.practicum.filmorate.logEnum.FilmEnums.InfoFilmEnums.InfoFilmServiceEnum;
 import ru.yandex.practicum.filmorate.logEnum.FilmEnums.InfoFilmEnums.InfoFilmStorageEnum;
 import ru.yandex.practicum.filmorate.logEnum.FilmEnums.InfoFilmEnums.InfoFilmSuccessEnum;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.filmEnums.AdultRate;
-import ru.yandex.practicum.filmorate.model.filmEnums.Genre;
+import ru.yandex.practicum.filmorate.model.filmFields.Genre;
+import ru.yandex.practicum.filmorate.model.filmFields.MPA;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -28,66 +29,86 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Film addFilm(Film film) {
+    public Optional<Film> addFilm(Film film) {
         log.info(InfoFilmServiceEnum.REQUEST_FILM_SERVICE_ADD_FILM.getInfo(film.getName()));
-        SqlRowSet filmRows = jdbcTemplate.queryForRowSet(
+        jdbcTemplate.update(
                 "INSERT INTO " + TblFlms.DB_TABLE_FILMS.getDB() + " (" +
                         TblFlms.DB_FIELD_FILM_NAME.getDB() + ", " +
                         TblFlms.DB_FIELD_FILM_DESCRIPTION.getDB() + ", " +
                         TblFlms.DB_FIELD_FILM_RELEASE_DATE.getDB() + ", " +
                         TblFlms.DB_FIELD_FILM_DURATION.getDB() + ", " +
                         TblFlms.DB_FIELD_FILM_RATE.getDB() + ", " +
-                        TblAdltRt.DB_FIELD_ADULT_RATE_ID.getDB() + ") " +
-                        "VALUES(?,?,?,?,?,?,?);" +
-                        "SELECT * " +
-                        "FROM " + TblFlms.DB_TABLE_FILMS.getDB() + " " +
-                        "WHERE " + TblFlms.DB_FIELD_FILM_NAME.getDB() + " = ?" ,
-                film.getName(), film.getDescription(), film.getReleaseDate(),
-                film.getDuration(), film.getRate(), film.getAdultRate(), film.getName());
-        if (filmRows.next() && filmRows.getString(TblFlms.DB_FIELD_FILM_NAME.getDB()).equals(film.getName())) {
-            film.setId(filmRows.getLong(TblFlms.DB_FIELD_FILM_ID.getDB()));
-            log.info(InfoFilmSuccessEnum.SUCCESS_ADD_FILM.getInfo(film.getId() + "/" + film.getName()));
-            return film;
-        } else {
-            log.error(ErrorFilmEnum.FAIL_FILM_TABLE_VALIDATION.getFilmError(film.getName()));
-            throw new FilmorateValidationException("name");
+                        TblAdltRt.DB_FIELD_MPA_ID.getDB() + ") " +
+                        "VALUES(?, ?, ?, ?, ?, ?)",
+                film.getName(), film.getDescription(), Date.valueOf(film.getReleaseDate()),
+                film.getDuration(), film.getRate(), film.getMpa().getId());
+        SqlRowSet filmRows = jdbcTemplate.queryForRowSet(
+                "SELECT COUNT(*) AS last_id " +
+                    "FROM " + TblFlms.DB_TABLE_FILMS.getDB());
+        if (filmRows.next()) {
+            film.setId(Integer.toUnsignedLong(filmRows.getInt("last_id")));
+            log.info(InfoFilmSuccessEnum.SUCCESS_ADD_FILM.getInfo(String.valueOf(film.getId())));
+            return Optional.of(film);
         }
+        return Optional.empty();
     }
 
     @Override
     public void deleteFilm(long filmID) {
         log.info(InfoFilmStorageEnum.REQUEST_FILM_STORAGE_DELETE_FILM.getInfo(String.valueOf(filmID)));
-        jdbcTemplate.queryForRowSet(
+        jdbcTemplate.update(
                 "DELETE FROM " + TblFlms.DB_TABLE_FILMS.getDB() + " " +
-                "WHERE + " + TblFlms.DB_FIELD_FILM_ID.getDB() + " = ?", filmID);
+                    "WHERE + " + TblFlms.DB_FIELD_FILM_ID.getDB() + " = ?", filmID);
         log.info(InfoFilmSuccessEnum.SUCCESS_DELETE_FILM.getInfo(String.valueOf(filmID)));
     }
 
     @Override
-    public Film updateFilm(long filmID, Film film) {
+    public Optional<Film> updateFilm(long filmID, Film film) {
         log.info(InfoFilmStorageEnum.REQUEST_FILM_STORAGE_UPDATE_FILM.getInfo(String.valueOf(filmID)));
-        SqlRowSet filmRows = jdbcTemplate.queryForRowSet(
+        jdbcTemplate.update(
                 "UPDATE " + TblFlms.DB_TABLE_FILMS.getDB() + " " +
-                        "SET " + TblFlms.DB_FIELD_FILM_NAME.getDB() + " = ?, " +
+                    "SET " + TblFlms.DB_FIELD_FILM_NAME.getDB() + " = ?, " +
                         TblFlms.DB_FIELD_FILM_DESCRIPTION.getDB() + " = ?," +
                         TblFlms.DB_FIELD_FILM_RELEASE_DATE.getDB() + " = ?, " +
                         TblFlms.DB_FIELD_FILM_DURATION.getDB() + " = ? , " +
                         TblFlms.DB_FIELD_FILM_RATE.getDB() + " = ? , " +
-                        TblAdltRt.DB_FIELD_ADULT_RATE_ID.getDB() + " = ? " +
-                        "WHERE " + TblFlms.DB_FIELD_FILM_ID + " = ?; " +
-                        "SELECT * " +
-                        "FROM " + TblFlms.DB_TABLE_FILMS.getDB() + " " +
-                        "WHERE " + TblFlms.DB_FIELD_FILM_ID.getDB() + " = ?",
-                film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(),film.getRate(),
-                film.getAdultRate(), filmID, filmID);
-        if (filmRows.next() && filmRows.getString(TblFlms.DB_FIELD_FILM_NAME.getDB()).equals(film.getName())) {
-            log.info(InfoFilmSuccessEnum.SUCCESS_UPDATE_FILM.getInfo(film.getId() + "/" + film.getName()));
-            return film;
-        } else {
-            log.error(ErrorFilmEnum.FAIL_FILM_TABLE_VALIDATION
-                    .getFilmError(film.getId() + "/" + film.getName()));
-            throw new FilmorateValidationException("name");
+                        TblAdltRt.DB_FIELD_MPA_ID.getDB() + " = ? " +
+                    "WHERE " + TblFlms.DB_FIELD_FILM_ID.getDB() + " = ?",
+                film.getName(), film.getDescription(), Date.valueOf(film.getReleaseDate()),
+                film.getDuration(),film.getRate(), film.getMpa().getId(), filmID);
+        jdbcTemplate.update(
+                "DELETE FROM " + TblFlmsGnr.DB_TABLE_FILMS_GENRE.getDB() + " " +
+                    "WHERE + " + TblFlms.DB_FIELD_FILM_ID.getDB() + " = ?", filmID);
+        jdbcTemplate.batchUpdate(
+                "INSERT INTO " + TblFlmsGnr.DB_TABLE_FILMS_GENRE.getDB() + " (" +
+                        TblFlms.DB_FIELD_FILM_ID.getDB() + ", " +
+                        TblGnr.DB_FIELD_GENRE_ID.getDB() + ") " +
+                    "VALUES (?, ?)", new BatchPreparedStatementSetter() {
+                    final Iterator<Genre> iterator = film.getGenres().iterator();
+                        @Override
+                        public void setValues(PreparedStatement ps, int i) throws SQLException {
+                            Genre genre = iterator.next();
+                            ps.setLong(1, filmID);
+                            ps.setInt(2, genre.getId());
+                        }
+
+                        @Override
+                        public int getBatchSize() {
+                            return film.getGenres().size();
+                        }
+                    }
+        );
+        SqlRowSet filmRows = jdbcTemplate.queryForRowSet(
+                "SELECT * " +
+                    "FROM " + TblFlms.DB_TABLE_FILMS.getDB() + " " +
+                    "WHERE " + TblFlms.DB_FIELD_FILM_ID.getDB() + " = ?", filmID);
+        if (filmRows.next()) {
+            Film localFilm = createFilm(filmRows);
+            localFilm.setId(filmRows.getLong(TblFlms.DB_FIELD_FILM_ID.getDB()));
+            log.info(InfoFilmSuccessEnum.SUCCESS_UPDATE_FILM.getInfo(String.valueOf(filmID)));
+            return Optional.of(localFilm);
         }
+        return Optional.empty();
     }
 
     @Override
@@ -105,59 +126,177 @@ public class FilmDbStorage implements FilmStorage {
         log.info(InfoFilmStorageEnum.REQUEST_FILM_STORAGE_GET_FILMS.getMessage());
         log.info(InfoFilmSuccessEnum.SUCCESS_GET_FILMS.getMessage());
         return jdbcTemplate.query(
-                "SELECT f.*, g." + TblGnr.DB_FIELD_GENRE_NAME.getDB() + ", " +
-                        "ar." + TblAdltRt.DB_FIELD_ADULT_RATE_NAME.getDB() + " " +
+                "SELECT f.*, ar." + TblAdltRt.DB_FIELD_MPA_NAME.getDB() + " " +
                     "FROM " + TblFlms.DB_TABLE_FILMS.getDB() + " AS f " +
-                    "LEFT OUTER JOIN " + TblFlmsGnr.DB_TABLE_FILMS_GENRE.getDB() + " AS fg " +
-                    "ON fg." + TblFlms.DB_FIELD_FILM_ID.getDB() + " = f." + TblFlms.DB_FIELD_FILM_ID.getDB() + " " +
-                    "LEFT OUTER JOIN " + TblGnr.DB_TABLE_GENRE.getDB() + "AS g " +
-                    "ON g." + TblGnr.DB_FIELD_GENRE_ID.getDB() + " = fg." + TblGnr.DB_FIELD_GENRE_ID.getDB(),
-                (rs, rowNum) -> {
-                    Film film = new Film(
-                            rs.getString(TblFlms.DB_FIELD_FILM_NAME.getDB()),
+                    "LEFT OUTER JOIN " + TblAdltRt.DB_TABLE_ADULT_RATE.getDB() + " AS ar " +
+                    "ON f." + TblAdltRt.DB_FIELD_MPA_ID.getDB() + " = ar." +
+                        TblAdltRt.DB_FIELD_MPA_ID.getDB(), (rs, rowNum) -> {
+                    Film localFilm = new Film(rs.getString(TblFlms.DB_FIELD_FILM_NAME.getDB()),
                             rs.getString(TblFlms.DB_FIELD_FILM_DESCRIPTION.getDB()),
                             rs.getDate(TblFlms.DB_FIELD_FILM_RELEASE_DATE.getDB()).toLocalDate(),
                             rs.getInt(TblFlms.DB_FIELD_FILM_DURATION.getDB()),
                             rs.getInt(TblFlms.DB_FIELD_FILM_RATE.getDB()),
-                            Genre.valueOf(rs.getString(TblGnr.DB_FIELD_GENRE_NAME.getDB())),
-                            AdultRate.valueOf(rs.getString(TblAdltRt.DB_FIELD_ADULT_RATE_NAME.getDB())));
-                    film.setId(rs.getLong(TblFlms.DB_FIELD_FILM_ID.getDB()));
-                    film.setLikes(getLikesUS(film.getId()));
-                    return film;
+                            new MPA(rs.getInt(TblAdltRt.DB_FIELD_MPA_ID.getDB()),
+                                    rs.getString(TblAdltRt.DB_FIELD_MPA_NAME.getDB())));
+                    localFilm.setId(rs.getLong(TblFlms.DB_FIELD_FILM_ID.getDB()));
+                    localFilm.setGenres(getGenres(localFilm.getId()));
+                    localFilm.setLikes(getLikes(localFilm.getId()));
+                    return localFilm;
                 });
     }
 
     @Override
-    public Film getFilm(long filmID) {
+    public Optional<Film> getFilm(long filmID) {
         log.info(InfoFilmStorageEnum.REQUEST_FILM_STORAGE_GET_FILM.getInfo(String.valueOf(filmID)));
         SqlRowSet filmRows = jdbcTemplate.queryForRowSet(
-                "SELECT f.*, g." + TblGnr.DB_FIELD_GENRE_NAME.getDB() + ", " +
-                "ar." + TblAdltRt.DB_FIELD_ADULT_RATE_NAME.getDB() + " " +
-                "FROM " + TblFlms.DB_TABLE_FILMS.getDB() + " AS f " +
-                "LEFT OUTER JOIN " + TblFlmsGnr.DB_TABLE_FILMS_GENRE.getDB() + " AS fg " +
-                "ON fg." + TblFlms.DB_FIELD_FILM_ID.getDB() + " = f." + TblFlms.DB_FIELD_FILM_ID.getDB() + " " +
-                "LEFT OUTER JOIN " + TblGnr.DB_TABLE_GENRE.getDB() + "AS g " +
-                "ON g." + TblGnr.DB_FIELD_GENRE_ID.getDB() + " = fg." + TblGnr.DB_FIELD_GENRE_ID.getDB() + " " +
-                "WHERE " + TblFlms.DB_FIELD_FILM_ID.getDB() + " = ?", filmID);
-        Film film = new Film(
-                filmRows.getString(TblFlms.DB_FIELD_FILM_NAME.getDB()),
+                "SELECT f.*, ar." + TblAdltRt.DB_FIELD_MPA_NAME.getDB() + " " +
+                    "FROM " + TblFlms.DB_TABLE_FILMS.getDB() + " AS f " +
+                    "LEFT OUTER JOIN " + TblAdltRt.DB_TABLE_ADULT_RATE.getDB() + " AS ar " +
+                    "ON f." + TblAdltRt.DB_FIELD_MPA_ID.getDB() + " = ar." +
+                        TblAdltRt.DB_FIELD_MPA_ID.getDB() + " " +
+                    "WHERE " + TblFlms.DB_FIELD_FILM_ID.getDB() + " = ?", filmID);
+        if (filmRows.next()) {
+            log.info(InfoFilmSuccessEnum.SUCCESS_GET_FILM.getInfo(String.valueOf(filmID)));
+            return Optional.of(createFilm(filmRows));
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Film> putLike(long filmID, long userID) {
+        log.info(InfoFilmStorageEnum.REQUEST_FILM_STORAGE_LIKE_FILM.getInfo(String.valueOf(filmID)));
+        jdbcTemplate.update(
+                "INSERT INTO " + TblFlmLks.DB_TABLE_FILM_LIKES.getDB() + " (" +
+                        TblFlms.DB_FIELD_FILM_ID.getDB() + ", " + TblUsrs.DB_FIELD_USER_ID.getDB() + ") " +
+                    "VALUES (?, ?)", filmID, userID);
+        log.info(InfoFilmSuccessEnum.SUCCESS_LIKE_FILM.getInfo(String.valueOf(filmID)));
+        return getFilm(filmID);
+    }
+
+    public Optional<Film> deleteLike(long filmID, long userID) {
+        log.info(InfoFilmStorageEnum.REQUEST_FILM_STORAGE_DISLIKE_FILM.getInfo(String.valueOf(filmID)));
+        jdbcTemplate.update(
+                "DELETE FROM " + TblFlmLks.DB_TABLE_FILM_LIKES.getDB() + " " +
+                    "WHERE " + TblFlms.DB_FIELD_FILM_ID.getDB() + " = ? AND " +
+                        TblUsrs.DB_FIELD_USER_ID.getDB() + " = ?", filmID, userID);
+        log.info(InfoFilmSuccessEnum.SUCCESS_DISLIKE_FILM.getInfo(String.valueOf(filmID)));
+        return getFilm(filmID);
+    }
+
+    public List<Film> getMostLikedFilms(int countFilms) {
+        log.info(InfoFilmStorageEnum.REQUEST_FILM_STORAGE_MOST_LIKED_FILMS.getInfo(String.valueOf(countFilms)));
+        log.info(InfoFilmSuccessEnum.SUCCESS_GET_MOST_LIKED_FILMS.getInfo(String.valueOf(countFilms)));
+        return jdbcTemplate.query(
+                "SELECT f.*, ar." + TblAdltRt.DB_FIELD_MPA_NAME.getDB() + " " +
+                    "FROM " + TblFlms.DB_TABLE_FILMS.getDB() + " AS f " +
+                    "LEFT OUTER JOIN " + TblFlmLks.DB_TABLE_FILM_LIKES.getDB() + " AS fl " +
+                    "ON f." + TblFlms.DB_FIELD_FILM_ID.getDB() + " = fl." + TblFlms.DB_FIELD_FILM_ID.getDB() + " " +
+                    "LEFT OUTER JOIN " + TblAdltRt.DB_TABLE_ADULT_RATE.getDB() + " AS ar " +
+                    "ON f." + TblAdltRt.DB_FIELD_MPA_ID.getDB() + " = ar." +
+                        TblAdltRt.DB_FIELD_MPA_ID.getDB() + " " +
+                    "GROUP BY f." + TblFlms.DB_FIELD_FILM_ID.getDB() + " " +
+                    "ORDER BY COUNT(fl." + TblUsrs.DB_FIELD_USER_ID.getDB() + ") " +
+                    "LIMIT ?", (rs, rowNum) -> {
+                    Film localFilm = new Film(rs.getString(TblFlms.DB_FIELD_FILM_NAME.getDB()),
+                            rs.getString(TblFlms.DB_FIELD_FILM_DESCRIPTION.getDB()),
+                            rs.getDate(TblFlms.DB_FIELD_FILM_RELEASE_DATE.getDB()).toLocalDate(),
+                            rs.getInt(TblFlms.DB_FIELD_FILM_DURATION.getDB()),
+                            rs.getInt(TblFlms.DB_FIELD_FILM_RATE.getDB()),
+                            new MPA(rs.getInt(TblAdltRt.DB_FIELD_MPA_ID.getDB()),
+                                    rs.getString(TblAdltRt.DB_FIELD_MPA_NAME.getDB())));
+                    localFilm.setId(rs.getLong(TblFlms.DB_FIELD_FILM_ID.getDB()));
+                    localFilm.setGenres(getGenres(localFilm.getId()));
+                    localFilm.setLikes(getLikes(localFilm.getId()));
+                    return localFilm;
+                }, countFilms);
+    }
+
+    public List<Genre> getGenres() {
+        log.info(InfoFilmStorageEnum.REQUEST_FILM_STORAGE_GET_GENRES.getMessage());
+        log.info(InfoFilmSuccessEnum.SUCCESS_GET_GENRES.getMessage());
+        return jdbcTemplate.query(
+                "SELECT * " +
+                    "FROM " + TblGnr.DB_TABLE_GENRE.getDB(), (rs, rowNum) ->
+                    new Genre (rs.getInt(TblGnr.DB_FIELD_GENRE_ID.getDB()),
+                            rs.getString(TblGnr.DB_FIELD_GENRE_NAME.getDB())));
+    }
+
+    public Optional<Genre> getGenre(int genreID) {
+        log.info(InfoFilmStorageEnum.REQUEST_FILM_STORAGE_GET_GENRE.getInfo(String.valueOf(genreID)));
+        SqlRowSet filmRows = jdbcTemplate.queryForRowSet(
+                "SELECT * " +
+                    "FROM " + TblGnr.DB_TABLE_GENRE.getDB() + " " +
+                    "WHERE " + TblGnr.DB_FIELD_GENRE_ID.getDB() + " = ?", genreID);
+        if (filmRows.next()) {
+            Genre genre = new Genre(
+                filmRows.getInt(TblGnr.DB_FIELD_GENRE_ID.getDB()),
+                filmRows.getString(TblGnr.DB_FIELD_GENRE_NAME.getDB())
+            );
+            log.info(InfoFilmSuccessEnum.SUCCESS_GET_GENRE.getInfo(String.valueOf(genreID)));
+            return Optional.of(genre);
+        }
+        return Optional.empty();
+    }
+
+    public List<MPA> getAllMpa() {
+        log.info(InfoFilmStorageEnum.REQUEST_FILM_STORAGE_GET_ALL_MPA.getMessage());
+        log.info(InfoFilmSuccessEnum.SUCCESS_GET_ALL_MPA.getMessage());
+        return jdbcTemplate.query(
+                "SELECT * " +
+                    "FROM " + TblAdltRt.DB_TABLE_ADULT_RATE.getDB(), (rs, rowNum) ->
+                        new MPA (rs.getInt(TblAdltRt.DB_FIELD_MPA_ID.getDB()),
+                                rs.getString(TblAdltRt.DB_FIELD_MPA_NAME.getDB())));
+    }
+
+    public Optional<MPA> getMpa(int mpaID) {
+        log.info(InfoFilmStorageEnum.REQUEST_FILM_STORAGE_GET_MPA.getInfo(String.valueOf(mpaID)));
+        SqlRowSet filmRows = jdbcTemplate.queryForRowSet(
+                "SELECT * " +
+                    "FROM " + TblAdltRt.DB_TABLE_ADULT_RATE.getDB() + " " +
+                    "WHERE " + TblAdltRt.DB_FIELD_MPA_ID.getDB() + " = ?", mpaID);
+        if (filmRows.next()) {
+            MPA mpa = new MPA(
+                    filmRows.getInt(TblAdltRt.DB_FIELD_MPA_ID.getDB()),
+                    filmRows.getString(TblAdltRt.DB_FIELD_MPA_NAME.getDB())
+            );
+            log.info(InfoFilmSuccessEnum.SUCCESS_GET_MPA.getInfo(String.valueOf(mpaID)));
+            return Optional.of(mpa);
+        }
+        return Optional.empty();
+    }
+
+    private Film createFilm(SqlRowSet filmRows) {
+        log.info(InfoFilmStorageEnum.REQUEST_FILM_STORAGE_PRIVATE_CREATE_FILM.getMessage());
+        Film film = new Film(filmRows.getString(TblFlms.DB_FIELD_FILM_NAME.getDB()),
                 filmRows.getString(TblFlms.DB_FIELD_FILM_DESCRIPTION.getDB()),
                 filmRows.getDate(TblFlms.DB_FIELD_FILM_RELEASE_DATE.getDB()).toLocalDate(),
                 filmRows.getInt(TblFlms.DB_FIELD_FILM_DURATION.getDB()),
                 filmRows.getInt(TblFlms.DB_FIELD_FILM_RATE.getDB()),
-                Genre.valueOf(filmRows.getString(TblGnr.DB_FIELD_GENRE_NAME.getDB())),
-                AdultRate.valueOf(filmRows.getString(TblAdltRt.DB_FIELD_ADULT_RATE_NAME.getDB())));
-        film.setId(film.getId());
-        film.setLikes(getLikesUS(film.getId()));
-        log.info(InfoFilmSuccessEnum.SUCCESS_GET_FILM.getInfo(film.getId() + "/" + film.getName()));
+                new MPA(filmRows.getInt(TblAdltRt.DB_FIELD_MPA_ID.getDB()),
+                        filmRows.getString(TblAdltRt.DB_FIELD_MPA_NAME.getDB())));
+        film.setId(filmRows.getLong(TblFlms.DB_FIELD_FILM_ID.getDB()));
+        film.setGenres(getGenres(film.getId()));
+        film.setLikes(getLikes(film.getId()));
         return film;
     }
 
-    private Set<Long> getLikesUS(Long filmID) {
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(
+    private Set<Genre> getGenres(long filmID) {
+        log.info(InfoFilmStorageEnum.REQUEST_FILM_STORAGE_PRIVATE_GET_GENRES.getInfo(String.valueOf(filmID)));
+        return new HashSet<>(jdbcTemplate.query(
+                "SELECT g.* " +
+                    "FROM " + TblGnr.DB_TABLE_GENRE.getDB() + " AS g " +
+                    "LEFT OUTER JOIN " + TblFlmsGnr.DB_TABLE_FILMS_GENRE.getDB() + " AS fg " +
+                    "ON g." + TblGnr.DB_FIELD_GENRE_ID.getDB() + " = fg." +
+                        TblGnr.DB_FIELD_GENRE_ID.getDB() + " " +
+                    "WHERE fg." + TblFlms.DB_FIELD_FILM_ID.getDB() + " = ?", (rs, rowNum) ->
+                        new Genre (rs.getInt(TblGnr.DB_FIELD_GENRE_ID.getDB()),
+                                rs.getString(TblGnr.DB_FIELD_GENRE_NAME.getDB())), filmID));
+    }
+
+    private Set<Long> getLikes(long filmID) {
+        log.info(InfoFilmStorageEnum.REQUEST_FILM_STORAGE_PRIVATE_GET_LIKES.getInfo(String.valueOf(filmID)));
+        return new HashSet<>(jdbcTemplate.queryForList(
                 "SELECT " + TblUsrs.DB_FIELD_USER_ID.getDB() + " " +
-                "FROM " + TblFlmLks.DB_TABLE_FILM_LIKES.getDB() + " " +
-                "WHERE " + TblFlms.DB_FIELD_FILM_ID.getDB() + " = ?", filmID);
-       return rows.stream().map(row -> (Long) row.get(TblUsrs.DB_FIELD_USER_ID.getDB())).collect(Collectors.toSet());
+                    "FROM " + TblFlmLks.DB_TABLE_FILM_LIKES.getDB() + " " +
+                    "WHERE " + TblFlms.DB_FIELD_FILM_ID.getDB() + " = ?", Long.class, filmID));
     }
 }
