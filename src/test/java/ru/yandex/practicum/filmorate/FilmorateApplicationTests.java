@@ -83,7 +83,7 @@ class FilmorateApplicationTests {
         assertThrows(FilmorateValidationException.class,
                 () -> filmController.addFilmFC(new Film("Довакин меняет профессию",
                         "Приключение на 20 минут", LocalDate.of(170, 5, 5),
-                        120, 6, new MPA (4, "R"))));
+                        120, 6, new MPA(4, "R"))));
         List<Film> filmList = filmController.getFilmsFC();
         assertEquals(1, filmList.size());
         assertTrue(filmList.contains(testFilm.orElseThrow()));
