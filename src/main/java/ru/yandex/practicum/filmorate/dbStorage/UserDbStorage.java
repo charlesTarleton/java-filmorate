@@ -20,7 +20,7 @@ public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
 
     public UserDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate=jdbcTemplate;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override

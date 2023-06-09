@@ -25,7 +25,7 @@ public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
 
     public FilmDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate=jdbcTemplate;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
