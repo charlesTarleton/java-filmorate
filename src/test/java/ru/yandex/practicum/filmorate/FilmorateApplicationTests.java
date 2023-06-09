@@ -62,7 +62,7 @@ class FilmorateApplicationTests {
 
     @Test
     public void shouldNotCreateFilmDescription() {
-        Optional <Film> testFilm = filmController.addFilmFC(testFilm1);
+        Optional<Film> testFilm = filmController.addFilmFC(testFilm1);
         assertThrows(FilmorateValidationException.class,
                 () -> filmController.addFilmFC(new Film("Непосредственно Геральт", "Этот фильм" +
                         " повествует о простом парне по имени Геральт, который жил обычной жизнью темерского" +
@@ -92,7 +92,7 @@ class FilmorateApplicationTests {
 
     @Test
     public void shouldNotCreateFilmDuration() {
-        Optional <Film> testFilm = filmController.addFilmFC(testFilm3);
+        Optional<Film> testFilm = filmController.addFilmFC(testFilm3);
         assertThrows(FilmorateValidationException.class,
                 () -> filmController.addFilmFC(new Film("Gravity Loops", "Детское, приключение",
                         LocalDate.of(2023, 5, 5), 0, 2,
@@ -110,7 +110,7 @@ class FilmorateApplicationTests {
     @Test
     public void shouldUpdateFilm() {
         long id = filmController.addFilmFC(testFilm1).orElseThrow().getId();
-        Optional <Film> testFilm = filmController.addFilmFC(testFilm2);
+        Optional<Film> testFilm = filmController.addFilmFC(testFilm2);
         Film localFilm = new Film("На Тоскану", "История, приключение, комедия",
                 LocalDate.of(2019, 4, 25), 95, 10, new MPA(5, "NC-17"));
         localFilm.setId(id);
@@ -125,7 +125,7 @@ class FilmorateApplicationTests {
 
     @Test
     public void shouldNotUpdateFilmDescription() {
-        Optional <Film> testFilm = filmController.addFilmFC(testFilm2);
+        Optional<Film> testFilm = filmController.addFilmFC(testFilm2);
         Film localFilm = new Film("Непосредственно Геральт", "Этот фильм,повествует о" +
                 " простом парне по имени Геральт, который жил обычной жизнью темерского школьника. Но однажды" +
                 " его засосало в какую-то дешевую японскую ММО РПГ и в этом мире он переродился в великого воина." +
@@ -142,7 +142,7 @@ class FilmorateApplicationTests {
 
     @Test
     public void shouldNotUpdateFilmDate() {
-        Optional <Film> testFilm = filmController.addFilmFC(testFilm1);
+        Optional<Film> testFilm = filmController.addFilmFC(testFilm1);
         Film localFilm = new Film("Довакин меняет профессию", "Комедия, ужасы",
                 LocalDate.of(170, 5, 5), 120, 6, new MPA(1, "G"));
         localFilm.setId(testFilm.orElseThrow().getId());
@@ -155,8 +155,8 @@ class FilmorateApplicationTests {
 
     @Test
     public void shouldNotUpdateFilmDuration() {
-        Optional <Film> testLocalFilm1 = filmController.addFilmFC(testFilm1);
-        Optional <Film> testLocalFilm2 = filmController.addFilmFC(testFilm2);
+        Optional<Film> testLocalFilm1 = filmController.addFilmFC(testFilm1);
+        Optional<Film> testLocalFilm2 = filmController.addFilmFC(testFilm2);
         Film localFilm1 = new Film("Gravity Loops", "Детское, приключение",
                 LocalDate.of(2023, 5, 5), 0, 2, new MPA(1, "G"));
         localFilm1.setId(testLocalFilm1.orElseThrow().getId());
@@ -175,8 +175,8 @@ class FilmorateApplicationTests {
 
     @Test
     public void shouldGetFilms() {
-        Optional <Film> testLocalFilm1 = filmController.addFilmFC(testFilm1);
-        Optional <Film> testLocalFilm2 = filmController.addFilmFC(testFilm3);
+        Optional<Film> testLocalFilm1 = filmController.addFilmFC(testFilm1);
+        Optional<Film> testLocalFilm2 = filmController.addFilmFC(testFilm3);
         List<Film> filmList = filmController.getFilmsFC();
         assertEquals(2, filmList.size());
         assertTrue(filmList.contains(testLocalFilm1.orElseThrow()));
@@ -188,7 +188,7 @@ class FilmorateApplicationTests {
     @Test
     public void shouldDeleteFilm() {
         long id = filmController.addFilmFC(testFilm2).orElseThrow().getId();
-        Optional <Film> testFilm = filmController.addFilmFC(testFilm3);
+        Optional<Film> testFilm = filmController.addFilmFC(testFilm3);
         filmController.deleteFilmFC(id);
         List<Film> filmList = filmController.getFilmsFC();
         assertEquals(1, filmList.size());
@@ -198,8 +198,8 @@ class FilmorateApplicationTests {
 
     @Test
     public void shouldNotDeleteFilm() {
-        Optional <Film> testLocalFilm1 = filmController.addFilmFC(testFilm1);
-        Optional <Film> testLocalFilm2 = filmController.addFilmFC(testFilm2);
+        Optional<Film> testLocalFilm1 = filmController.addFilmFC(testFilm1);
+        Optional<Film> testLocalFilm2 = filmController.addFilmFC(testFilm2);
         assertThrows(FilmorateObjectException.class, () -> filmController.deleteFilmFC(4));
         List<Film> filmList = filmController.getFilmsFC();
         assertEquals(2, filmList.size());
@@ -212,7 +212,7 @@ class FilmorateApplicationTests {
     @Test
     public void shouldGetFilm() {
         long id = filmController.addFilmFC(testFilm1).orElseThrow().getId();
-        Optional <Film> testFilm = filmController.addFilmFC(testFilm3);
+        Optional<Film> testFilm = filmController.addFilmFC(testFilm3);
         assertEquals(testFilm, filmController.getFilmFC(testFilm.orElseThrow().getId()));
         filmController.deleteFilmFC(id);
         filmController.deleteFilmFC(testFilm.orElseThrow().getId());
