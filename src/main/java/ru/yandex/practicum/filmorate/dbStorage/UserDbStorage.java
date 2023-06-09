@@ -4,17 +4,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.dbStorage.DatabaseEnums.TblFrndshpSt;
-import ru.yandex.practicum.filmorate.dbStorage.DatabaseEnums.TblUsrFrndshp;
-import ru.yandex.practicum.filmorate.dbStorage.DatabaseEnums.TblUsrs;
+import ru.yandex.practicum.filmorate.dbStorage.DatabaseEnums.*;
 import ru.yandex.practicum.filmorate.logEnum.UserEnums.InfoFilmEnums.InfoUserStorageEnum;
 import ru.yandex.practicum.filmorate.logEnum.UserEnums.InfoFilmEnums.InfoUserSuccessEnum;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.sql.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -36,15 +34,11 @@ public class UserDbStorage implements UserStorage {
                         TblUsrs.DB_FIELD_USER_BIRTHDAY.getDB() + ") " +
                         "VALUES (?, ?, ?, ?)",
                 user.getEmail(), user.getLogin(), user.getName(), Date.valueOf(user.getBirthday()));
-        SqlRowSet userRows = jdbcTemplate.queryForRowSet(
-                "SELECT COUNT(*) AS last_id " +
-                "FROM " + TblUsrs.DB_TABLE_USERS.getDB());
-        if (userRows.next()) {
-            user.setId(Integer.toUnsignedLong(userRows.getInt("last_id")));
-            log.info(InfoUserSuccessEnum.SUCCESS_ADD_USER.getInfo(String.valueOf(user.getId())));
-            return Optional.of(user);
-        }
-        return Optional.empty();
+        user.setId(jdbcTemplate.queryForObject(
+                "SELECT MAX(" + TblUsrs.DB_FIELD_USER_ID.getDB() + ") " +
+                    "FROM " + TblUsrs.DB_TABLE_USERS.getDB(), Long.class));
+        log.info(InfoUserSuccessEnum.SUCCESS_ADD_USER.getInfo(String.valueOf(user.getId())));
+        return Optional.of(user);
     }
 
     @Override
@@ -122,6 +116,7 @@ public class UserDbStorage implements UserStorage {
                     userRows.getDate(TblUsrs.DB_FIELD_USER_BIRTHDAY.getDB()).toLocalDate());
             user.setId(userID);
             user.setName(userRows.getString(TblUsrs.DB_FIELD_USER_NAME.getDB()));
+            user.setUserFriends(getFriendsID(userID));
             log.info(InfoUserSuccessEnum.SUCCESS_GET_USER.getInfo(String.valueOf(user.getId())));
             return Optional.of(user);
         }
@@ -169,6 +164,7 @@ public class UserDbStorage implements UserStorage {
                     rs.getDate(TblUsrs.DB_FIELD_USER_BIRTHDAY.getDB()).toLocalDate());
             user.setId(rs.getLong(TblUsrs.DB_FIELD_USER_ID.getDB()));
             user.setName(rs.getString(TblUsrs.DB_FIELD_USER_NAME.getDB()));
+            user.setUserFriends(getFriendsID(user.getId()));
             return user;
         }, userID);
     }
@@ -195,5 +191,19 @@ public class UserDbStorage implements UserStorage {
                     user.setName(rs.getString(TblUsrs.DB_FIELD_USER_NAME.getDB()));
                     return user;
         });
+    }
+
+    private Map<Long, Boolean> getFriendsID(long userID) {
+        return jdbcTemplate.queryForList(
+                "SELECT uf." + TblUsrFrndshp.DB_FIELD_FRIEND_USER_ID.getDB() + ", fs." +
+                        TblFrndshpSt.DB_FIELD_FRIENDSHIP_STATUS_NAME.getDB() + " " +
+                    "FROM " + TblUsrFrndshp.DB_TABLE_USER_FRIENDSHIP.getDB() + " AS uf " +
+                    "LEFT OUTER JOIN " + TblFrndshpSt.DB_TABLE_FRIENDSHIP_STATUS.getDB() + " AS fs " +
+                    "ON uf." + TblFrndshpSt.DB_FIELD_FRIENDSHIP_STATUS_ID.getDB() + " = fs." +
+                        TblFrndshpSt.DB_FIELD_FRIENDSHIP_STATUS_ID.getDB() + " " +
+                    "WHERE uf." + TblUsrs.DB_FIELD_USER_ID.getDB() + " = ?", userID)
+                .stream().collect(Collectors.toMap(id -> (Long) id.get(TblUsrFrndshp.DB_FIELD_FRIEND_USER_ID
+                                .getDB()), status -> Boolean.getBoolean(status
+                        .get(TblFrndshpSt.DB_FIELD_FRIENDSHIP_STATUS_NAME.getDB()).toString())));
     }
 }

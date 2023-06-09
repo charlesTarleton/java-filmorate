@@ -15,7 +15,7 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping("/films")
+@RequestMapping
 public class FilmController {
     private final FilmService filmService;
     private static final String DEFAULT_COUNT_OF_MOST_LIKED_FILMS = "10";
@@ -25,50 +25,50 @@ public class FilmController {
         this.filmService = filmService;
     }
 
-    @PostMapping
+    @PostMapping("/films")
     public Optional<Film> addFilmFC(@Valid @RequestBody Film film) {
         log.info(InfoFilmControllerEnum.REQUEST_FILM_CONTROLLER_ADD_FILM.getInfo(film.toString()));
         return filmService.addFilmFS(film);
     }
 
-    @DeleteMapping
+    @DeleteMapping("/films")
     public void deleteFilmFC(@RequestBody long filmID) {
         log.info(InfoFilmControllerEnum.REQUEST_FILM_CONTROLLER_DELETE_FILM.getInfo(String.valueOf(filmID)));
         filmService.deleteFilmFS(filmID);
     }
 
-    @PutMapping
+    @PutMapping("/films")
     public Optional<Film> updateFilmFC(@Valid @RequestBody Film film) {
         log.info(InfoFilmControllerEnum.REQUEST_FILM_CONTROLLER_UPDATE_FILM.getInfo(film.toString()));
         return filmService.updateFilmFS(film.getId(), film);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/films/{id}")
     public Optional<Film> getFilmFC(@PathVariable("id") long filmID) {
         log.info(InfoFilmControllerEnum.REQUEST_FILM_CONTROLLER_GET_FILM.getInfo(String.valueOf(filmID)));
         return filmService.getFilmFS(filmID);
     }
 
-    @PutMapping("/{id}/like/{userId}")
+    @PutMapping("/films/{id}/like/{userId}")
     public Optional<Film> putLikeFC(@PathVariable("id") long filmID, @PathVariable("userId") long userID) {
         log.info(InfoFilmControllerEnum.REQUEST_FILM_CONTROLLER_PUT_LIKE.getInfo(filmID + "/" + userID));
         return filmService.putLikeFS(filmID, userID);
     }
 
-    @DeleteMapping("/{id}/like/{userId}")
+    @DeleteMapping("/films/{id}/like/{userId}")
     public Optional<Film> deleteLikeFC(@PathVariable("id") long filmID, @PathVariable("userId") long userID) {
         log.info(InfoFilmControllerEnum.REQUEST_FILM_CONTROLLER_DELETE_LIKE.getInfo(filmID + "/" + userID));
         return filmService.deleteLikeFS(filmID, userID);
     }
 
-    @GetMapping("/popular")
+    @GetMapping("/films/popular")
     public List<Film> getMostLikedFilmsFC(@RequestParam(
             defaultValue = DEFAULT_COUNT_OF_MOST_LIKED_FILMS) int count) {
         log.info(InfoFilmControllerEnum.REQUEST_FILM_CONTROLLER_GET_MOST_LIKED_FILMS.getInfo(String.valueOf(count)));
         return filmService.getMostLikedFilmsFS(count);
     }
 
-    @GetMapping
+    @GetMapping("/films")
     public List<Film> getFilmsFC() {
         log.info(InfoFilmControllerEnum.REQUEST_FILM_CONTROLLER_GET_FILMS.getMessage());
         return filmService.getFilmsFS();
@@ -81,7 +81,7 @@ public class FilmController {
     }
 
     @GetMapping("/genres/{id}")
-    public Optional<Genre> getGenreFC(@PathVariable("id") int genreID) {
+    public Genre getGenreFC(@PathVariable("id") int genreID) {
         log.info(InfoFilmControllerEnum.REQUEST_FILM_CONTROLLER_GET_GENRE.getInfo(String.valueOf(genreID)));
         return filmService.getGenreFS(genreID);
     }
@@ -93,7 +93,7 @@ public class FilmController {
     }
 
     @GetMapping("/mpa/{id}")
-    public Optional<MPA> getMpaFC(@PathVariable("id") int mpaID) {
+    public MPA getMpaFC(@PathVariable("id") int mpaID) {
         log.info(InfoFilmControllerEnum.REQUEST_FILM_CONTROLLER_GET_MPA.getInfo(String.valueOf(mpaID)));
         return filmService.getMpaFS(mpaID);
     }

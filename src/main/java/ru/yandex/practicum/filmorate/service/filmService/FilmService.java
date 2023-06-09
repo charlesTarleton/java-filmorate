@@ -24,6 +24,8 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
     private static final LocalDate BIRTHDAY_MOVIE = LocalDate.of(1895, 12, 28);
+    private static final int GENRES_COUNT = 6;
+    private static final int MPA_RATES_COUNT = 5;
 
     @Autowired
     public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
@@ -143,8 +145,13 @@ public class FilmService {
         return filmStorage.getGenres();
     }
 
-    public Optional<Genre> getGenreFS(int genreID) {
+    public Genre getGenreFS(int genreID) {
         log.info(InfoFilmServiceEnum.FILM_SERVICE_GET_GENRE.getInfo(String.valueOf(genreID)));
+        if (genreID > GENRES_COUNT || genreID < 1) {
+            log.error(ErrorFilmEnum.FAIL_FILM_GENRE_ID.getFilmError(genreID));
+            throw new FilmorateObjectException(FilmExceptionMessages
+                    .FILM_GENRE_ID_NOT_CONTAINS.getMessage() + GENRES_COUNT);
+        }
         return filmStorage.getGenre(genreID);
     }
 
@@ -153,8 +160,13 @@ public class FilmService {
         return filmStorage.getAllMpa();
     }
 
-    public Optional<MPA> getMpaFS(int mpaID) {
+    public MPA getMpaFS(int mpaID) {
         log.info(InfoFilmServiceEnum.FILM_SERVICE_GET_MPA.getInfo(String.valueOf(mpaID)));
+        if (mpaID > MPA_RATES_COUNT || mpaID < 1) {
+            log.error(ErrorFilmEnum.FAIL_FILM_MPA_ID.getFilmError(mpaID));
+            throw new FilmorateObjectException(FilmExceptionMessages
+                    .FILM_MPA_ID_NOT_CONTAINS.getMessage() + MPA_RATES_COUNT);
+        }
         return filmStorage.getMpa(mpaID);
     }
 }

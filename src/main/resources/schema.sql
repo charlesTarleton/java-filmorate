@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS films (
 	film_description VARCHAR,
 	film_release_date DATE,
 	film_duration INTEGER,
-	film_rate FLOAT,
+	film_rate INTEGER,
 	adult_rate_ID INTEGER REFERENCES adult_rate (adult_rate_ID)
 );
 

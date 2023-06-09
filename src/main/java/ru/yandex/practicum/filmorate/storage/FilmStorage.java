@@ -28,9 +28,9 @@ public interface FilmStorage {
 
     public List<Genre> getGenres();
 
-    public Optional<Genre> getGenre(int genreID);
+    public Genre getGenre(int genreID);
 
     public List<MPA> getAllMpa();
 
-    public Optional<MPA> getMpa(int mpaID);
+    public MPA getMpa(int mpaID);
 }

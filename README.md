@@ -1,130 +1,72 @@
 # java-filmorate
 Template repository for Filmorate project.
 
+###### После ТЗ 10.5 значения были изменены т.к. у автора не было представления о jdbcTemplate и будущем функционале в ТЗ 11
+
 <details>
-<summary>ТЗ 10.5</summary>
+<summary>ТЗ 11.0</summary>
 
 ![](src/main/resources/filmorate_database_sheme.PNG)
+
 <details>
-    <summary>Запрос при добавлении/обновлении/получении фильма или добавления/удаления лайка к фильму</summary>
-    ```sql
-    SELECT f.film_id, 
-           f.film_name, 
-           f.film_description, 
-           f.film_release_date, 
-           f.film_duration, 
-           f.film_rate, 
-           g.genre_name, 
-           ar.adult_rate_name, 
-           fl.user_id AS liked_user 
-    FROM film AS f 
-    LEFT OUTER JOIN films_genre AS fg ON fg.film_id = f.film_id 
-    LEFT OUTER JOIN genre AS g ON g.genre_id = fg.genre_id
-    LEFT OUTER JOIN adult_rate AS ar ON ar.adult_rate_id = f.adult_rate_id
-    LEFT OUTER JOIN film_likes AS fl ON fl.film_id = f.film_id
-    WHERE f.film_id = /*ID фильма*/;
-    ```
+    <summary>Запрос при добавлении фильма</summary>
+
+        INSERT INTO films (film_name, film_description, film_release_date,
+        film_duration, film_rate, adult_rate_id)  
+        VALUES(?, ?, ?, ?, ?, ?);
+
+        SELECT MAX(film_id)
+        FROM films;
 </details>
 <details>
-    <summary>Запрос при получении всех фильмов</summary>
-    ```sql
-    SELECT f.film_id,
-           f.film_name,
-           f.film_description,
-           f.film_release_date,
-           f.film_duration,
-           f.film_rate,
-           g.genre_name,
-           ar.adult_rate_name,
-           fl.user_id AS liked_user 
-    FROM film AS f 
-    LEFT OUTER JOIN films_genre AS fg ON fg.film_id = f.film_id
-    LEFT OUTER JOIN genre AS g ON g.genre_id = fg.genre_id 
-    LEFT OUTER JOIN adult_rate AS ar ON ar.adult_rate_id = f.adult_rate_id 
-    LEFT OUTER JOIN film_likes AS fl ON fl.film_id = f.film_id;
-    ```
+    <summary>Запрос при удалении фильма</summary>
+
+        DELETE FROM films
+        WHERE film_id = ?;
 </details>
 <details>
-    <summary>Запрос на получение наиболее популярных фильмов в количестве</summary>
-    ```sql
-    SELECT f.film_id,
-           f.film_name,
-           f.film_description,
-           f.film_release_date,
-           f.film_duration,
-           f.film_rate,
-           g.genre_name,
-           ar.adult_rate_name,
-           fl.user_id AS liked_user
-    FROM film AS f 
-    LEFT OUTER JOIN films_genre AS fg ON fg.film_id = f.film_id
-    LEFT OUTER JOIN genre AS g ON g.genre_id = fg.genre_id
-    LEFT OUTER JOIN adult_rate AS ar ON ar.adult_rate_id = f.adult_rate_id
-    LEFT OUTER JOIN film_likes AS fl ON fl.film_id = f.film_id
-    GROUP BY f.film_id, 
-             f.film_name, 
-             f.film_description, 
-             f.film_release_date, 
-             f.film_duration, 
-             f.film_rate, 
-             ar.adult_rate_name, 
-             fl.user_id AS liked_user
-    ORDER BY COUNT(liked_user) 
-    LIMIT /*полученное ограничение, если его нет то 10*/;
-    ```
+    <summary>Запрос при обновлении фильма</summary>
+
+        UPDATE films 
+        SET film_name = ?, film_description = ?, film_release_date = ?,
+            film_duration = ?, film_rate = ?, adult_rate_id = ?
+        WHERE film_id = ?;
+
+        DELETE FROM films_genre
+        WHERE film_id = ?;
+
+        INSERT INTO films_genre (film_id, genre_id)
+        VALUES (?, ?);
+
+        SELECT f.*, ar.adult_rate_name
+        FROM films AS f
+        LEFT OUTER JOIN adult_rate AS ar ON f.adult_rate_id = ar.adult_rate_id
+        WHERE f.film_id = ?;
 </details>
 <details>
-    <summary>Запрос при добавлении/обновлении/получении пользователя или добавления/удаления друга</summary>
-    ```sql
-    SELECT u.*,
-           uf.friend_user_id,
-           fs.friendship_status_name 
-    FROM user AS u 
-    LEFT OUTER JOIN user_friendship AS uf ON uf.user_id = u.user_id
-    LEFT OUTER JOIN friendship_status AS fs ON fs.friendship_status_id = uf.friendship_status_id
-    WHERE u.user_id = ID пользователя;
-    ```
+    <summary>Запрос на добавление пользователя</summary>
+
+        INSERT INTO users (user_email, user_login, user_name, user_birthday)
+        VALUES (?, ?, ?, ?);
+
+        SELECT MAX(user_id)
+        FROM users;
 </details>
 <details>
-    <summary>Запрос на получение всех пользователей</summary>
-    ```sql
-    SELECT u.*,
-           uf.friend_user_id,
-           fs.friendship_status_name 
-    FROM user AS u 
-    LEFT OUTER JOIN user_friendship AS uf ON uf.user_id = u.user_id 
-    LEFT OUTER JOIN friendship_status AS fs ON fs.friendship_status_id = uf.friendship_status_id;
-    ```
+    <summary>Запрос на удаление пользователя</summary>
+
+        DELETE FROM users
+        WHERE user_id = ?;
 </details>
 <details>
-    <summary>Запрос на получение друзей</summary>
-    ```sql
-    SELECT u.*,
-           ufr.friend_user_id,
-           fs.friendship_status_name 
-    FROM user AS u LEFT OUTER JOIN user_friendship AS ufr ON ufr.user_id = u.user_id
-    LEFT OUTER JOIN friendship_status AS fs ON fs.friendship_status_id = ufr.friendship_status_id
-    WHERE u.user_id IN (SELECT uf.friend_user_id 
-                        FROM user_friendship AS uf 
-                        WHERE uf.user_id = /*ID пользователя, чьих друзей мы ищем*/);
-    ```
-</details>
-<details>
-    <summary>Запрос на получение общих друзей</summary>
-    ```sql
-    SELECT u.*,
-           uf.friend_user_id,
-           fs.friendship_status_name 
-    FROM user AS u 
-    LEFT OUTER JOIN user_friendship AS uf ON uf.user_id = u.user_id 
-    LEFT OUTER JOIN friendship_status AS fs ON fs.friendship_status_id = uf.friendship_status_id 
-    WHERE u.user_id IN (SELECT uff.friend_user_id 
-                        FROM user_friendship AS uff 
-                        WHERE uff.user_id = /*ID первого пользователя/* 
-                        INTERSECT 
-                        SELECT ufs.friend_user_id 
-                        FROM user_friendship AS ufs 
-                        WHERE ufs.user_id = /*ID второго пользователя*/);
-    ```
+    <summary>Запрос на обновление пользователя</summary>
+
+        UPDATE users
+        SET user_email = ?, user_login = ?, user_name = ?, user_birthday = ? 
+        WHERE user_id = ?;
+
+        SELECT * 
+        FROM users 
+        WHERE user_id = ?;
 </details>
 </details>

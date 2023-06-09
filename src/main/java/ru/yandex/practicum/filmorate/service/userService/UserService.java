@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.exception.FilmorateObjectException;
 import ru.yandex.practicum.filmorate.exception.FilmorateValidationException;
 import ru.yandex.practicum.filmorate.logEnum.UserEnums.ErrorUserEnum;
 import ru.yandex.practicum.filmorate.logEnum.UserEnums.InfoFilmEnums.InfoUserServiceEnum;
-import ru.yandex.practicum.filmorate.logEnum.UserEnums.InfoFilmEnums.InfoUserSuccessEnum;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -32,8 +31,7 @@ public class UserService {
             throw new FilmorateObjectException(UserExceptionMessages
                     .USER_ID_CONTAINS_EXCEPTION_MESSAGE.getMessage());
         }
-        validateUser(user);
-        return userStorage.addUser(user);
+        return userStorage.addUser(validateUser(user));
     }
 
     public void deleteUserUS(long userID) {
@@ -53,8 +51,7 @@ public class UserService {
             throw new FilmorateObjectException(UserExceptionMessages
                     .USER_ID_NOT_CONTAINS_EXCEPTION_MESSAGE.getMessage());
         }
-        validateUser(user);
-        return userStorage.updateUser(userID, user);
+        return userStorage.updateUser(userID, validateUser(user));
     }
 
     public Optional<User> getUserUS(long userID) {
@@ -116,10 +113,18 @@ public class UserService {
     public List<User> getCommonFriendsUS(long userID, long otherID) {
         log.info(InfoUserServiceEnum.REQUEST_USER_SERVICE_GET_COMMON_FRIENDS_USER
                 .getInfo(userID + "/" + otherID));
+        if (!userStorage.isContainsUser(userID)) {
+            throw new FilmorateObjectException(UserExceptionMessages
+                    .USER_ID_NOT_CONTAINS_EXCEPTION_MESSAGE.getMessage());
+        }
+        if (!userStorage.isContainsUser(otherID)) {
+            throw new FilmorateObjectException(UserExceptionMessages
+                    .USER_ID_NOT_CONTAINS_EXCEPTION_MESSAGE.getMessage());
+        }
         return userStorage.getCommonFriends(userID, otherID);
     }
 
-    private void validateUser(@Valid User user) {
+    private User validateUser(@Valid User user) {
         log.info(InfoUserServiceEnum.USER_SERVICE_VALIDATE_USER.getInfo(user.toString()));
         if (user.getBirthday().isAfter(LocalDate.now())) {
             log.error(ErrorUserEnum.FAIL_USER_BIRTHDAY.getUserError(user.getBirthday()));
@@ -129,5 +134,6 @@ public class UserService {
         if (user.getName() == null || user.getName().isEmpty()) {
             user.setName(user.getLogin());
         }
+        return user;
     }
 }
