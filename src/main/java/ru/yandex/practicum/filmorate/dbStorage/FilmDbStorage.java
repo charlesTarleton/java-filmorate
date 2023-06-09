@@ -198,7 +198,7 @@ public class FilmDbStorage implements FilmStorage {
                 "SELECT * " +
                     "FROM " + TblGnr.DB_TABLE_GENRE.getDB() + " " +
                     "ORDER BY " + TblGnr.DB_FIELD_GENRE_ID.getDB(), (rs, rowNum) ->
-                    new Genre (rs.getInt(TblGnr.DB_FIELD_GENRE_ID.getDB()),
+                    new Genre(rs.getInt(TblGnr.DB_FIELD_GENRE_ID.getDB()),
                             rs.getString(TblGnr.DB_FIELD_GENRE_NAME.getDB())));
     }
 
@@ -223,7 +223,7 @@ public class FilmDbStorage implements FilmStorage {
                 "SELECT * " +
                     "FROM " + TblAdltRt.DB_TABLE_ADULT_RATE.getDB() + " " +
                     "ORDER BY " + TblAdltRt.DB_FIELD_MPA_ID.getDB(), (rs, rowNum) ->
-                        new MPA (rs.getInt(TblAdltRt.DB_FIELD_MPA_ID.getDB()),
+                        new MPA(rs.getInt(TblAdltRt.DB_FIELD_MPA_ID.getDB()),
                                 rs.getString(TblAdltRt.DB_FIELD_MPA_NAME.getDB())));
     }
 
@@ -265,7 +265,7 @@ public class FilmDbStorage implements FilmStorage {
                         TblGnr.DB_FIELD_GENRE_ID.getDB() + " " +
                     "WHERE fg." + TblFlms.DB_FIELD_FILM_ID.getDB() + " = ? " +
                     "ORDER BY " + TblGnr.DB_FIELD_GENRE_ID.getDB(), (rs, rowNum) ->
-                        new Genre (rs.getInt(TblGnr.DB_FIELD_GENRE_ID.getDB()),
+                        new Genre(rs.getInt(TblGnr.DB_FIELD_GENRE_ID.getDB()),
                                 rs.getString(TblGnr.DB_FIELD_GENRE_NAME.getDB())), filmID));
     }
 

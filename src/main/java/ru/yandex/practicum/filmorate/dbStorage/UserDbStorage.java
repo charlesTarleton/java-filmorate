@@ -197,13 +197,13 @@ public class UserDbStorage implements UserStorage {
         return jdbcTemplate.queryForList(
                 "SELECT uf." + TblUsrFrndshp.DB_FIELD_FRIEND_USER_ID.getDB() + ", fs." +
                         TblFrndshpSt.DB_FIELD_FRIENDSHIP_STATUS_NAME.getDB() + " " +
-                    "FROM " + TblUsrFrndshp.DB_TABLE_USER_FRIENDSHIP.getDB() + " AS uf " +
-                    "LEFT OUTER JOIN " + TblFrndshpSt.DB_TABLE_FRIENDSHIP_STATUS.getDB() + " AS fs " +
-                    "ON uf." + TblFrndshpSt.DB_FIELD_FRIENDSHIP_STATUS_ID.getDB() + " = fs." +
+                        "FROM " + TblUsrFrndshp.DB_TABLE_USER_FRIENDSHIP.getDB() + " AS uf " +
+                        "LEFT OUTER JOIN " + TblFrndshpSt.DB_TABLE_FRIENDSHIP_STATUS.getDB() + " AS fs " +
+                        "ON uf." + TblFrndshpSt.DB_FIELD_FRIENDSHIP_STATUS_ID.getDB() + " = fs." +
                         TblFrndshpSt.DB_FIELD_FRIENDSHIP_STATUS_ID.getDB() + " " +
-                    "WHERE uf." + TblUsrs.DB_FIELD_USER_ID.getDB() + " = ?", userID)
+                        "WHERE uf." + TblUsrs.DB_FIELD_USER_ID.getDB() + " = ?", userID)
                 .stream().collect(Collectors.toMap(id -> (Long) id.get(TblUsrFrndshp.DB_FIELD_FRIEND_USER_ID
-                                .getDB()), status -> Boolean.getBoolean(status
+                        .getDB()), status -> Boolean.getBoolean(status
                         .get(TblFrndshpSt.DB_FIELD_FRIENDSHIP_STATUS_NAME.getDB()).toString())));
     }
 }
