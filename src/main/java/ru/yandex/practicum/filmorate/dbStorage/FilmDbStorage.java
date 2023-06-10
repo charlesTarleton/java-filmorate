@@ -66,7 +66,7 @@ public class FilmDbStorage implements FilmStorage {
             } else {
                 prst.setInt(5, film.getRate());
             }
-            if (film.getMpa().getId() == null){
+            if (film.getMpa().getId() == null) {
                 prst.setNull(6, Types.INTEGER);
             } else {
                 prst.setInt(6, film.getMpa().getId());
