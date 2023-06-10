@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.logEnum.UserEnums.InfoFilmEnums;
+package ru.yandex.practicum.filmorate.logEnum.userEnums.InfoFilmEnums;
 
 public enum InfoUserSuccessEnum {
     SUCCESS_ADD_USER("Успешное добавление пользователя с ID: "),

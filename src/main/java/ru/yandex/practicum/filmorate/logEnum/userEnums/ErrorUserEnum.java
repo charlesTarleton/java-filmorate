@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.logEnum.UserEnums;
+package ru.yandex.practicum.filmorate.logEnum.userEnums;
 
 public enum ErrorUserEnum {
     FAIL_USER_ID("Характеристика пользователя: \"id\". Значение: "),

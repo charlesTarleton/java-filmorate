@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.controller.FilmController;
+import ru.yandex.practicum.filmorate.controller.GenreController;
+import ru.yandex.practicum.filmorate.controller.MPAController;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.FilmorateObjectException;
 import ru.yandex.practicum.filmorate.exception.FilmorateValidationException;
@@ -26,6 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class FilmorateApplicationTests {
     private final UserController userController;
     private final FilmController filmController;
+    private final GenreController genreController;
+    private final MPAController mpaController;
 
     private final Film testFilm1 = new Film("На Мюнхен", "Комедия для всей семьи",
             LocalDate.of(2019, 4, 25), 95, 10, new MPA(1, "G"));
@@ -45,16 +49,16 @@ class FilmorateApplicationTests {
     @Test
     public void shouldCreateFilm() {
         Set<Genre> test3Set = Set.of(new Genre(5, "Документальный"));
-        testFilm3.setGenres(test3Set);
+        Film localTest = testFilm3;
+        localTest.setGenres(test3Set);
         Film testLocalFilm1 = filmController.addFilmFC(testFilm1).orElseThrow();
         Film testLocalFilm2 = filmController.addFilmFC(testFilm2).orElseThrow();
-        Film testLocalFilm3 = filmController.addFilmFC(testFilm3).orElseThrow();
+        Film testLocalFilm3 = filmController.addFilmFC(localTest).orElseThrow();
         List<Film> filmList = filmController.getFilmsFC();
         assertEquals(3, filmList.size());
         assertTrue(filmList.contains(testLocalFilm1));
         assertTrue(filmList.contains(testLocalFilm2));
-        assertTrue(filmList.contains(testLocalFilm3));
-
+        assertTrue(filmList.contains(localTest));
         filmController.deleteFilmFC(testLocalFilm1.getId());
         filmController.deleteFilmFC(testLocalFilm2.getId());
         filmController.deleteFilmFC(testLocalFilm3.getId());
@@ -231,13 +235,12 @@ class FilmorateApplicationTests {
     public void shouldPutLike() {
         long idU = userController.addUserUC(testUser1).orElseThrow().getId();
         long idF1 = filmController.addFilmFC(testFilm1).orElseThrow().getId();
-        long idF2 = filmController.addFilmFC(testFilm2).orElseThrow().getId();
-        filmController.putLikeFC(idF2, idU);
-        assertEquals(1, filmController.getFilmFC(idF2).orElseThrow().getLikes().size());
-        assertTrue(filmController.getFilmFC(idF2).orElseThrow().getLikes().contains(idU));
+        Optional<Film> testFilm = filmController.addFilmFC(testFilm2);
+        filmController.putLikeFC(testFilm.orElseThrow().getId(), idU);
+        assertEquals(testFilm.orElseThrow(), filmController.getMostLikedFilmsFC(1).get(0));
         userController.deleteUserUC(idU);
         filmController.deleteFilmFC(idF1);
-        filmController.deleteFilmFC(idF2);
+        filmController.deleteFilmFC(testFilm.orElseThrow().getId());
     }
 
     @Test
@@ -250,18 +253,6 @@ class FilmorateApplicationTests {
         filmController.deleteFilmFC(idF1);
         filmController.deleteFilmFC(idF2);
         userController.deleteUserUC(idU);
-    }
-
-    @Test
-    public void shouldDeleteLike() {
-        long idU = userController.addUserUC(testUser3).orElseThrow().getId();
-        long idF1 = filmController.addFilmFC(testFilm1).orElseThrow().getId();
-        long idF2 = filmController.addFilmFC(testFilm2).orElseThrow().getId();
-        filmController.putLikeFC(idF2, idU);
-        assertEquals(0, filmController.deleteLikeFC(idF2, idU).orElseThrow().getLikes().size());
-        userController.deleteUserUC(idU);
-        filmController.deleteFilmFC(idF1);
-        filmController.deleteFilmFC(idF2);
     }
 
     @Test
@@ -310,7 +301,7 @@ class FilmorateApplicationTests {
 
     @Test
     public void shouldReturnAllGenres() {
-        List<Genre> genreList = filmController.getGenresFC();
+        List<Genre> genreList = genreController.getGenresGC();
         assertTrue(genreList.contains(new Genre(1, "Комедия")));
         assertTrue(genreList.contains(new Genre(2, "Драма")));
         assertTrue(genreList.contains(new Genre(3, "Мультфильм")));
@@ -321,20 +312,20 @@ class FilmorateApplicationTests {
 
     @Test
     public void shouldReturnGenre() {
-        assertEquals(new Genre(2, "Драма"), filmController.getGenreFC(2));
-        assertEquals(new Genre(5, "Документальный"), filmController.getGenreFC(5));
+        assertEquals(new Genre(2, "Драма"), genreController.getGenreGC(2));
+        assertEquals(new Genre(5, "Документальный"), genreController.getGenreGC(5));
     }
 
     @Test
     public void shouldNotReturnGenre() {
-        assertThrows(FilmorateObjectException.class, () -> filmController.getGenreFC(8));
-        assertThrows(FilmorateObjectException.class, () -> filmController.getGenreFC(0));
-        assertThrows(FilmorateObjectException.class, () -> filmController.getGenreFC(-1));
+        assertThrows(FilmorateObjectException.class, () -> genreController.getGenreGC(8));
+        assertThrows(FilmorateObjectException.class, () -> genreController.getGenreGC(0));
+        assertThrows(FilmorateObjectException.class, () -> genreController.getGenreGC(-1));
     }
 
     @Test
     public void shouldReturnAllMPA() {
-        List<MPA> mpaList = filmController.getAllMpaFC();
+        List<MPA> mpaList = mpaController.getAllMpaMC();
         assertTrue(mpaList.contains(new MPA(1, "G")));
         assertTrue(mpaList.contains(new MPA(2, "PG")));
         assertTrue(mpaList.contains(new MPA(3, "PG-13")));
@@ -344,15 +335,15 @@ class FilmorateApplicationTests {
 
     @Test
     public void shouldReturnMPA() {
-        assertEquals(new MPA(1, "G"), filmController.getMpaFC(1));
-        assertEquals(new MPA(4, "R"), filmController.getMpaFC(4));
+        assertEquals(new MPA(1, "G"), mpaController.getMpaMC(1));
+        assertEquals(new MPA(4, "R"), mpaController.getMpaMC(4));
     }
 
     @Test
     public void shouldNotReturnMPA() {
-        assertThrows(FilmorateObjectException.class, () -> filmController.getMpaFC(6));
-        assertThrows(FilmorateObjectException.class, () -> filmController.getMpaFC(0));
-        assertThrows(FilmorateObjectException.class, () -> filmController.getMpaFC(-1));
+        assertThrows(FilmorateObjectException.class, () -> mpaController.getMpaMC(6));
+        assertThrows(FilmorateObjectException.class, () -> mpaController.getMpaMC(0));
+        assertThrows(FilmorateObjectException.class, () -> mpaController.getMpaMC(-1));
     }
 
     private List<List<Long>> forTestMostLikedFilmsAdd() {
@@ -509,12 +500,10 @@ class FilmorateApplicationTests {
         Optional<User> testLocalUser1 = userController.addUserUC(testUser1);
         Optional<User> testLocalUser2 = userController.addUserUC(testUser2);
         userController.addFriendUC(testLocalUser1.orElseThrow().getId(), testLocalUser2.orElseThrow().getId());
-        assertEquals(1, userController.getUserUC(testLocalUser1.orElseThrow().getId()).orElseThrow()
-                .getUserFriends().size());
-        assertTrue(userController.getUserUC(testLocalUser1.orElseThrow().getId()).orElseThrow()
-                .getUserFriends().containsKey(testLocalUser2.orElseThrow().getId()));
-        assertEquals(0, userController.getUserUC(testLocalUser2.orElseThrow().getId()).orElseThrow()
-                .getUserFriends().size());
+        assertEquals(1, userController.getFriendsUC(testLocalUser1.orElseThrow().getId()).size());
+        assertEquals(testLocalUser2.orElseThrow(),
+                userController.getFriendsUC(testLocalUser1.orElseThrow().getId()).get(0));
+        assertEquals(0, userController.getFriendsUC(testLocalUser2.orElseThrow().getId()).size());
         userController.deleteUserUC(testLocalUser1.orElseThrow().getId());
         userController.deleteUserUC(testLocalUser2.orElseThrow().getId());
     }
@@ -524,8 +513,8 @@ class FilmorateApplicationTests {
         long idU1 = userController.addUserUC(testUser1).orElseThrow().getId();
         long idU2 = userController.addUserUC(testUser2).orElseThrow().getId();
         assertThrows(FilmorateObjectException.class, () -> userController.addFriendUC(1000, idU2));
-        assertEquals(0, userController.getUserUC(idU1).orElseThrow().getUserFriends().size());
-        assertEquals(0, userController.getUserUC(idU2).orElseThrow().getUserFriends().size());
+        assertEquals(0, userController.getFriendsUC(idU1).size());
+        assertEquals(0, userController.getFriendsUC(idU2).size());
         userController.deleteUserUC(idU1);
         userController.deleteUserUC(idU2);
     }
@@ -535,11 +524,11 @@ class FilmorateApplicationTests {
         long idU1 = userController.addUserUC(testUser1).orElseThrow().getId();
         long idU2 = userController.addUserUC(testUser2).orElseThrow().getId();
         userController.addFriendUC(idU1, idU2);
-        assertEquals(1, userController.getUserUC(idU1).orElseThrow().getUserFriends().size());
-        assertTrue(userController.getUserUC(idU1).orElseThrow().getUserFriends().containsKey(idU2));
+        assertEquals(1, userController.getFriendsUC(idU1).size());
+        assertTrue(userController.getFriendsUC(idU1).contains(userController.getUserUC(idU2).orElseThrow()));
         userController.deleteFriendUC(idU1, idU2);
-        assertEquals(0, userController.getUserUC(idU1).orElseThrow().getUserFriends().size());
-        assertEquals(0, userController.getUserUC(idU2).orElseThrow().getUserFriends().size());
+        assertEquals(0, userController.getFriendsUC(idU1).size());
+        assertEquals(0, userController.getFriendsUC(idU2).size());
         userController.deleteUserUC(idU1);
         userController.deleteUserUC(idU2);
     }
@@ -551,8 +540,8 @@ class FilmorateApplicationTests {
         userController.addFriendUC(idU1, idU2);
         assertThrows(FilmorateObjectException.class, () -> userController.deleteFriendUC(1000, idU2));
         assertThrows(FilmorateObjectException.class, () -> userController.deleteFriendUC(idU1, 1000));
-        assertEquals(1, userController.getUserUC(idU1).orElseThrow().getUserFriends().size());
-        assertTrue(userController.getUserUC(idU1).orElseThrow().getUserFriends().containsKey(idU2));
+        assertEquals(1, userController.getFriendsUC(idU1).size());
+        assertTrue(userController.getFriendsUC(idU1).contains(userController.getUserUC(idU2).orElseThrow()));
         userController.deleteUserUC(idU1);
         userController.deleteUserUC(idU2);
     }

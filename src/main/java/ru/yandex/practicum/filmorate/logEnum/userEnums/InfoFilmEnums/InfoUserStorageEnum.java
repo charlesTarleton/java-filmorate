@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.logEnum.UserEnums.InfoFilmEnums;
+package ru.yandex.practicum.filmorate.logEnum.userEnums.InfoFilmEnums;
 
 public enum InfoUserStorageEnum {
     REQUEST_USER_STORAGE_ADD_USER("Хранилище пользователей получило запрос на добавление пользователя: "),

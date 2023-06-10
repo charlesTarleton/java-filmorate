@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.logEnum.UserEnums.InfoFilmEnums;
+package ru.yandex.practicum.filmorate.logEnum.userEnums.InfoFilmEnums;
 
 public enum InfoUserServiceEnum {
     REQUEST_USER_SERVICE_ADD_USER("Сервис пользователей получил запрос на добавление пользователя: "),

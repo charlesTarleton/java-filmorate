@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.logEnum.FilmEnums.InfoFilmEnums;
+package ru.yandex.practicum.filmorate.logEnum.filmEnums.InfoFilmEnums;
 
 public enum InfoFilmServiceEnum {
     REQUEST_FILM_SERVICE_ADD_FILM("Сервис фильмов получил запрос на добавление фильма: "),
@@ -12,10 +12,6 @@ public enum InfoFilmServiceEnum {
     REQUEST_FILM_SERVICE_GET_FILMS("Сервис фильмов получил запрос на получение всех фильмов"),
     REQUEST_FILM_SERVICE_GET_MOST_LIKED_FILMS("Сервис фильмов получил запрос на получение" +
             " самых популярных фильмов в количестве: "),
-    FILM_SERVICE_GET_GENRES("Сервис фильмов получил запрос на получение жанров"),
-    FILM_SERVICE_GET_GENRE("Сервис фильмов получил запрос на получение жанра с ID: "),
-    FILM_SERVICE_GET_ALL_MPA("Сервис фильмов получил запрос на получение рейтингов"),
-    FILM_SERVICE_GET_MPA("Сервис фильмов получил запрос на получение рейтинга с ID: "),
     FILM_SERVICE_VALIDATE_FILM("Начата процедура валидации фильма: ");
     private final String message;
 

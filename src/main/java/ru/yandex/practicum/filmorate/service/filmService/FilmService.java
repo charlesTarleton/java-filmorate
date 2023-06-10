@@ -5,12 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.FilmorateObjectException;
 import ru.yandex.practicum.filmorate.exception.FilmorateValidationException;
-import ru.yandex.practicum.filmorate.logEnum.FilmEnums.ErrorFilmEnum;
-import ru.yandex.practicum.filmorate.logEnum.UserEnums.ErrorUserEnum;
-import ru.yandex.practicum.filmorate.logEnum.FilmEnums.InfoFilmEnums.InfoFilmServiceEnum;
+import ru.yandex.practicum.filmorate.logEnum.filmEnums.ErrorFilmEnum;
+import ru.yandex.practicum.filmorate.logEnum.userEnums.ErrorUserEnum;
+import ru.yandex.practicum.filmorate.logEnum.filmEnums.InfoFilmEnums.InfoFilmServiceEnum;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.filmFields.Genre;
-import ru.yandex.practicum.filmorate.model.filmFields.MPA;
 import ru.yandex.practicum.filmorate.service.userService.UserExceptionMessages;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -24,8 +22,6 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
     private static final LocalDate BIRTHDAY_MOVIE = LocalDate.of(1895, 12, 28);
-    private static final int GENRES_COUNT = 6;
-    private static final int MPA_RATES_COUNT = 5;
 
     @Autowired
     public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
@@ -138,35 +134,5 @@ public class FilmService {
             throw new FilmorateValidationException(FilmExceptionMessages
                     .FILM_DURATION_EXCEPTION_MESSAGE.getMessage());
         }
-    }
-
-    public List<Genre> getGenresFS() {
-        log.info(InfoFilmServiceEnum.FILM_SERVICE_GET_GENRES.getMessage());
-        return filmStorage.getGenres();
-    }
-
-    public Genre getGenreFS(int genreID) {
-        log.info(InfoFilmServiceEnum.FILM_SERVICE_GET_GENRE.getInfo(String.valueOf(genreID)));
-        if (genreID > GENRES_COUNT || genreID < 1) {
-            log.error(ErrorFilmEnum.FAIL_FILM_GENRE_ID.getFilmError(genreID));
-            throw new FilmorateObjectException(FilmExceptionMessages
-                    .FILM_GENRE_ID_NOT_CONTAINS.getMessage() + GENRES_COUNT);
-        }
-        return filmStorage.getGenre(genreID);
-    }
-
-    public List<MPA> getAllMpaFS() {
-        log.info(InfoFilmServiceEnum.FILM_SERVICE_GET_ALL_MPA.getMessage());
-        return filmStorage.getAllMpa();
-    }
-
-    public MPA getMpaFS(int mpaID) {
-        log.info(InfoFilmServiceEnum.FILM_SERVICE_GET_MPA.getInfo(String.valueOf(mpaID)));
-        if (mpaID > MPA_RATES_COUNT || mpaID < 1) {
-            log.error(ErrorFilmEnum.FAIL_FILM_MPA_ID.getFilmError(mpaID));
-            throw new FilmorateObjectException(FilmExceptionMessages
-                    .FILM_MPA_ID_NOT_CONTAINS.getMessage() + MPA_RATES_COUNT);
-        }
-        return filmStorage.getMpa(mpaID);
     }
 }

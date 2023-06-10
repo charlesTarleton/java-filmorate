@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.logEnum.FilmEnums;
+package ru.yandex.practicum.filmorate.logEnum.filmEnums;
 
 public enum ErrorFilmEnum {
     FAIL_FILM_ID("Характеристика фильма: \"id\". Значение: "),

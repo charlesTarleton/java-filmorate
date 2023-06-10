@@ -8,9 +8,7 @@ public enum FilmExceptionMessages {
     FILM_ID_NOT_CONTAINS_EXCEPTION_MESSAGE("в библиотеке фильмов отсутствует фильм с указанным ID"),
     FILM_NOT_CONTAINS_LIKE_EXCEPTION_MESSAGE("У фильма с указанным ID отсутствует лайк от пользователя" +
             " с указанным ID"),
-    FILM_COUNT_EXCEPTION_MESSAGE("количество запрошенных фильмов не может быть меньше 1"),
-    FILM_GENRE_ID_NOT_CONTAINS("ID запрошенного жанра не может быть меньше 1 и больше "),
-    FILM_MPA_ID_NOT_CONTAINS("ID запрошенного возрастного рейтинга не может быть меньше 1 и больше ");
+    FILM_COUNT_EXCEPTION_MESSAGE("количество запрошенных фильмов не может быть меньше 1");
     private final String message;
 
     FilmExceptionMessages(String message) {
