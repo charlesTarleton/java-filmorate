@@ -5,10 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.FilmorateObjectException;
 import ru.yandex.practicum.filmorate.exception.FilmorateValidationException;
-import ru.yandex.practicum.filmorate.logEnum.FilmEnums.ErrorFilmEnum;
-import ru.yandex.practicum.filmorate.logEnum.UserEnums.ErrorUserEnum;
-import ru.yandex.practicum.filmorate.logEnum.FilmEnums.InfoFilmEnums.InfoFilmServiceEnum;
-import ru.yandex.practicum.filmorate.logEnum.FilmEnums.InfoFilmEnums.InfoFilmSuccessEnum;
+import ru.yandex.practicum.filmorate.logEnum.filmEnums.ErrorFilmEnum;
+import ru.yandex.practicum.filmorate.logEnum.userEnums.ErrorUserEnum;
+import ru.yandex.practicum.filmorate.logEnum.filmEnums.InfoFilmEnums.InfoFilmServiceEnum;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.userService.UserExceptionMessages;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -16,7 +15,6 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -24,8 +22,6 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
     private static final LocalDate BIRTHDAY_MOVIE = LocalDate.of(1895, 12, 28);
-    private static final Comparator<Film> MOST_LIKED_FILMS_COMPARATOR = Comparator
-            .comparingInt(film -> -film.getLikes().size());
 
     @Autowired
     public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
@@ -33,7 +29,7 @@ public class FilmService {
         this.userStorage = userStorage;
     }
 
-    public Film addFilmFS(Film film) {
+    public Optional<Film> addFilmFS(Film film) {
         log.info(InfoFilmServiceEnum.REQUEST_FILM_SERVICE_ADD_FILM.getInfo(film.toString()));
         if (film.getId() != null) {
             log.error(ErrorFilmEnum.FAIL_FILM_ID.getFilmError(film.getId()));
@@ -54,7 +50,7 @@ public class FilmService {
         filmStorage.deleteFilm(filmID);
     }
 
-    public Film updateFilmFS(long filmID, Film film) {
+    public Optional<Film> updateFilmFS(long filmID, Film film) {
         log.info(InfoFilmServiceEnum.REQUEST_FILM_SERVICE_UPDATE_FILM.getInfo(film.toString()));
         if (!filmStorage.isContainsFilm(filmID)) {
             log.error(ErrorFilmEnum.FAIL_FILM_ID.getFilmError(filmID));
@@ -65,7 +61,7 @@ public class FilmService {
         return filmStorage.updateFilm(filmID, film);
     }
 
-    public Film getFilmFS(long filmID) {
+    public Optional<Film> getFilmFS(long filmID) {
         log.info(InfoFilmServiceEnum.REQUEST_FILM_SERVICE_GET_FILM.getInfo(String.valueOf(filmID)));
         if (!filmStorage.isContainsFilm(filmID)) {
             log.error(ErrorFilmEnum.FAIL_FILM_ID.getFilmError(filmID));
@@ -75,7 +71,7 @@ public class FilmService {
         return filmStorage.getFilm(filmID);
     }
 
-    public Film putLikeFS(long filmID, long userID) {
+    public Optional<Film> putLikeFS(long filmID, long userID) {
         log.info(InfoFilmServiceEnum.REQUEST_FILM_SERVICE_PUT_LIKE.getInfo(filmID + "/" + userID));
         if (!filmStorage.isContainsFilm(filmID)) {
             log.error(ErrorFilmEnum.FAIL_FILM_ID.getFilmError(filmID));
@@ -87,13 +83,10 @@ public class FilmService {
             throw new FilmorateObjectException(UserExceptionMessages
                     .USER_ID_NOT_CONTAINS_EXCEPTION_MESSAGE.getMessage());
         }
-        Film film = filmStorage.getFilm(filmID);
-        film.getLikes().add(userID);
-        log.info(InfoFilmSuccessEnum.SUCCESS_LIKE_FILM.getInfo(filmID + "/" + film.getName()));
-        return film;
+        return filmStorage.putLike(filmID, userID);
     }
 
-    public Film deleteLikeFS(long filmID, long userID) {
+    public Optional<Film> deleteLikeFS(long filmID, long userID) {
         log.info(InfoFilmServiceEnum.REQUEST_FILM_SERVICE_DELETE_LIKE.getInfo(filmID + "/" + userID));
         if (!filmStorage.isContainsFilm(filmID)) {
             log.error(ErrorFilmEnum.FAIL_FILM_ID.getFilmError(filmID));
@@ -105,20 +98,11 @@ public class FilmService {
             throw new FilmorateObjectException(UserExceptionMessages
                     .USER_ID_NOT_CONTAINS_EXCEPTION_MESSAGE.getMessage());
         }
-        Film film = filmStorage.getFilm(filmID);
-        if (!film.getLikes().contains(userID)) {
-            log.error(ErrorFilmEnum.FAIL_FILM_ID.getFilmError(filmID));
-            throw new FilmorateObjectException(FilmExceptionMessages
-                    .FILM_NOT_CONTAINS_LIKE_EXCEPTION_MESSAGE.getMessage());
-        }
-        film.getLikes().remove(userID);
-        log.info(InfoFilmSuccessEnum.SUCCESS_DISLIKE_FILM.getInfo(filmID + "/" + film.getName()));
-        return film;
+        return filmStorage.deleteLike(filmID, userID);
     }
 
     public List<Film> getFilmsFS() {
         log.info(InfoFilmServiceEnum.REQUEST_FILM_SERVICE_GET_FILMS.getMessage());
-        log.info(InfoFilmSuccessEnum.SUCCESS_GET_FILMS.getMessage());
         return filmStorage.getFilms();
     }
 
@@ -128,9 +112,7 @@ public class FilmService {
             log.error(ErrorFilmEnum.FAIL_FILM_COUNT.getFilmError(countFilms));
             throw new FilmorateObjectException(FilmExceptionMessages.FILM_COUNT_EXCEPTION_MESSAGE.getMessage());
         }
-        log.info(InfoFilmSuccessEnum.SUCCESS_GET_MOST_LIKED_FILMS.getInfo(String.valueOf(countFilms)));
-            return filmStorage.getFilms().stream()
-                    .sorted(MOST_LIKED_FILMS_COMPARATOR).limit(countFilms).collect(Collectors.toList());
+        return filmStorage.getMostLikedFilms(countFilms);
     }
 
     private void validateFilm(Film film) {

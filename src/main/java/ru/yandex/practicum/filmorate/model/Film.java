@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
+import ru.yandex.practicum.filmorate.model.filmFields.*;
+
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -17,5 +19,6 @@ public class Film {
     @NotNull
     private final Integer duration;
     private final Integer rate;
-    private final Set<Long> likes = new HashSet<>();
+    private Set<Genre> genres = new HashSet<>();
+    private final MPA mpa;
 }
